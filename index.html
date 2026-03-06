@@ -221,9 +221,9 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
         });
       });
 
-      result.Stats = stats.value || '@@@/@@@/@@@';
-      result.Code1 = code1.value || '@@@';
-      result.Code2 = code2.value || '@@@';
+      result.Stats = (stats.value || '@@@/@@@/@@@').trim();
+      result.Code1 = (code1.value || '@@@').trim();
+      result.Code2 = (code2.value || '@@@').trim();
 
       const code3Value = code3.value.trim();
       if (code3Value !== '') {
