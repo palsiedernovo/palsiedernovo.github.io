@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preload → JSON 변환기</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Malgun Gothic", sans-serif;
+      background: #f5f7fb;
+      color: #222;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+    }
+    .desc {
+      margin: 0;
+      color: #555;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    textarea, input {
+      width: 100%;
+      border: 1px solid #d0d7e2;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+    textarea {
+      min-height: 360px;
+      resize: vertical;
+      line-height: 1.5;
+      font-family: Consolas, monospace;
+    }
+    input {
+      margin-bottom: 14px;
+    }
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+    .secondary {
+      background: #e5e7eb;
+      color: #222;
+    }
+    pre {
+      margin: 0;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 18px;
+      overflow: auto;
+      min-height: 360px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+    }
+    .hint {
+      margin-top: 8px;
+      color: #666;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Preload → JSON 변환기</h1>
+      <p class="desc">
+        왼쪽에 <code>call Preload(...)</code> 내용을 붙여넣으면,
+        오른쪽에 JSON 형태로 자동 변환됩니다.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="code1">Code1</label>
+          <input id="code1" type="text" placeholder="Code1 입력" />
+        </div>
+        <div>
+          <label for="code2">Code2</label>
+          <input id="code2" type="text" placeholder="Code2 입력" />
+        </div>
+        <div>
+          <label for="code3">Code3</label>
+          <input id="code3" type="text" placeholder="Code3 입력" />
+        </div>
+      </div>
+      <div>
+        <label for="stats">Stats</label>
+        <input id="stats" type="text" placeholder="예: 123/456/789" value="@@@/@@@/@@@" />
+      </div>
+      <div class="hint">Code1, Code2, Code3, Stats 값도 같이 JSON에 포함됩니다.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label for="input">Preload 입력</label>
+        <textarea id="input">call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag2:0/0/0/0/0/0,ULbag2Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )</textarea>
+        <div class="btns">
+          <button class="primary" id="copyBtn">JSON 복사</button>
+          <button class="secondary" id="sampleBtn">샘플 넣기</button>
+          <button class="secondary" id="clearBtn">초기화</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label for="output">JSON 결과</label>
+        <pre id="output"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+    const copyBtn = document.getElementById('copyBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const code1 = document.getElementById('code1');
+    const code2 = document.getElementById('code2');
+    const code3 = document.getElementById('code3');
+    const stats = document.getElementById('stats');
+
+    const sampleText = `call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag2:0/0/0/0/0/0,ULbag2Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
+
+    function defaultData() {
+      return {
+        ULbag1: '0/0/0/0/0/0',
+        ULbag1Ch: '0/0/0/0/0/0',
+        ULbag2: '0/0/0/0/0/0',
+        ULbag2Ch: '0/0/0/0/0/0',
+        ULbag3: '0/0/0/0/0/0',
+        ULbag3Ch: '0/0/0/0/0/0',
+        ULbag4: '0/0/0/0/0/0',
+        ULbag4Ch: '0/0/0/0/0/0',
+        ULbag5: '0/0/0/0/0/0',
+        ULbag5Ch: '0/0/0/0/0/0',
+        Stats: stats.value || '@@@/@@@/@@@',
+        Code1: code1.value || '@@@',
+        Code2: code2.value || '@@@',
+        Code3: code3.value || '@@@'
+      };
+    }
+
+    function parsePreload(text) {
+      const result = defaultData();
+      const normalized = text.replace(/[\u200B-\u200D\uFEFF]/g, ' ');
+      const regex = /call\s+Preload\s*\(\s*"([^"]*)"\s*\)/gi;
+      const matches = [...normalized.matchAll(regex)];
+
+      matches.forEach(match => {
+        const content = match[1];
+        const pairs = content.split(',');
+
+        pairs.forEach(pair => {
+          const idx = pair.indexOf(':');
+          if (idx === -1) return;
+
+          const key = pair.slice(0, idx).trim();
+          const value = pair.slice(idx + 1).trim();
+
+          if (key) result[key] = value;
+        });
+      });
+
+      result.Stats = stats.value || '@@@/@@@/@@@';
+      result.Code1 = code1.value || '@@@';
+      result.Code2 = code2.value || '@@@';
+      result.Code3 = code3.value || '@@@';
+
+      return result;
+    }
+
+    function render() {
+      const parsed = parsePreload(input.value);
+      output.textContent = JSON.stringify(parsed, null, 2);
+    }
+
+    input.addEventListener('input', render);
+    code1.addEventListener('input', render);
+    code2.addEventListener('input', render);
+    code3.addEventListener('input', render);
+    stats.addEventListener('input', render);
+
+    sampleBtn.addEventListener('click', () => {
+      input.value = sampleText;
+      render();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      code1.value = '';
+      code2.value = '';
+      code3.value = '';
+      stats.value = '@@@/@@@/@@@';
+      render();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(output.textContent);
+        copyBtn.textContent = '복사됨';
+        setTimeout(() => {
+          copyBtn.textContent = 'JSON 복사';
+        }, 1200);
+      } catch (e) {
+        alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
