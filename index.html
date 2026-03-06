@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preload → JSON 변환기1</title>
+  <title>Preload → JSON 변환기</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -130,22 +130,24 @@
       <div class="row">
         <div>
           <label for="code1">Code1</label>
-          <input id="code1" type="text" placeholder="Code1 입력" />
+          <input id="code1" type="text" placeholder="Code1 입력" value="1" />
         </div>
         <div>
           <label for="code2">Code2</label>
-          <input id="code2" type="text" placeholder="Code2 입력" />
+          <input id="code2" type="text" placeholder="Code2 입력" value="2" />
         </div>
         <div>
           <label for="code3">Code3</label>
-          <input id="code3" type="text" placeholder="Code3 입력" />
+          <input id="code3" type="text" placeholder="비워두면 JSON에 제외됨" value="3" />
         </div>
       </div>
       <div>
         <label for="stats">Stats</label>
-        <input id="stats" type="text" placeholder="예: 123/456/789" value="@@@/@@@/@@@" />
+        <input id="stats" type="text" placeholder="예: 123/456/789" value="1/2/3" />
       </div>
-      <div class="hint">Code1, Code2, Code3, Stats 값도 같이 JSON에 포함됩니다.</div>
+      <div class="hint">
+        Code3가 비어 있으면 JSON 결과에서 Code3 항목은 아예 출력되지 않습니다.
+      </div>
     </div>
 
     <div class="grid">
@@ -207,10 +209,9 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
         ULbag4Ch: '0/0/0/0/0/0',
         ULbag5: '0/0/0/0/0/0',
         ULbag5Ch: '0/0/0/0/0/0',
-        Stats: stats.value || '@@@/@@@/@@@',
-        Code1: code1.value || '@@@',
-        Code2: code2.value || '@@@',
-        Code3: code3.value || '@@@'
+        Stats: stats.value || '1/2/3',
+        Code1: code1.value || '1',
+        Code2: code2.value || '2'
       };
     }
 
@@ -235,10 +236,14 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
         });
       });
 
-      result.Stats = stats.value || '@@@/@@@/@@@';
-      result.Code1 = code1.value || '@@@';
-      result.Code2 = code2.value || '@@@';
-      result.Code3 = code3.value || '@@@';
+      result.Stats = stats.value || '1/2/3';
+      result.Code1 = code1.value || '1';
+      result.Code2 = code2.value || '2';
+
+      const code3Value = code3.value.trim();
+      if (code3Value !== '') {
+        result.Code3 = code3Value;
+      }
 
       return result;
     }
@@ -261,10 +266,10 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
 
     clearBtn.addEventListener('click', () => {
       input.value = '';
-      code1.value = '';
-      code2.value = '';
+      code1.value = '1';
+      code2.value = '2';
       code3.value = '';
-      stats.value = '@@@/@@@/@@@';
+      stats.value = '1/2/3';
       render();
     });
 
