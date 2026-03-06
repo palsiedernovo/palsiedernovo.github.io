@@ -20,7 +20,7 @@
     .card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       padding: 24px;
       margin-bottom: 20px;
     }
@@ -39,7 +39,9 @@
       gap: 20px;
     }
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
     label {
       display: block;
@@ -146,7 +148,7 @@
 
       <div>
         <label for="stats">Stats</label>
-        <input id="stats" type="text" placeholder="자동 계산되거나 직접 입력 가능" value="1/2/3" />
+        <input id="stats" type="text" placeholder="자동 계산되거나 직접 입력 가능" />
       </div>
 
       <div>
@@ -181,26 +183,15 @@
 
       <div class="hint">
         Code3가 비어있으면 JSON 결과에서 Code3 항목은 출력되지 않습니다.<br />
-        또한 <code>call Preload( "Str: ..." )</code>, <code>Agi</code>, <code>Int</code> 값이 있으면 Stats가 자동으로 조합됩니다.
+        <code>Str / Agi / Int</code> 값이 있으면 Stats가 자동으로 조합됩니다.<br />
+        <code>ID / Gold / Lumber / Char / Lv / Exp</code> 같은 항목은 자동으로 무시됩니다.
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
         <label for="input">Preload 입력</label>
-        <textarea id="input">call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
-
-call Preload( "ULbag2:0/0/0/0/0/0,ULbag2Ch:0/0/0/0/0/0" )
-
-call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
-
-call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
-
-call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
-
-call Preload( "Str: 1000001" )
-call Preload( "Agi: 500001" )
-call Preload( "Int: 1030001" )</textarea>
+        <textarea id="input"></textarea>
         <div class="btns">
           <button class="primary" id="copyBtn">JSON 복사</button>
           <button class="secondary" id="sampleBtn">샘플 넣기</button>
@@ -254,10 +245,7 @@ call Preload( "Int: 1030001" )`;
         ULbag4: '0/0/0/0/0/0',
         ULbag4Ch: '0/0/0/0/0/0',
         ULbag5: '0/0/0/0/0/0',
-        ULbag5Ch: '0/0/0/0/0/0',
-        Stats: '1/2/3',
-        Code1: '',
-        Code2: ''
+        ULbag5Ch: '0/0/0/0/0/0'
       };
     }
 
@@ -283,7 +271,7 @@ call Preload( "Int: 1030001" )`;
 
           if (key === 'Str' || key === 'Agi' || key === 'Int') {
             statValues[key] = value;
-          } else {
+          } else if (/^ULbag[1-5](Ch)?$/.test(key)) {
             result[key] = value;
           }
         });
@@ -297,15 +285,25 @@ call Preload( "Int: 1030001" )`;
 
       if (selectedStats.every(v => v !== '')) {
         result.Stats = selectedStats.join('/');
-        stats.value = result.Stats;
       } else {
-        result.Stats = (stats.value || '1/2/3').trim();
+        const manualStats = stats.value.trim();
+        if (manualStats !== '') {
+          result.Stats = manualStats;
+        }
       }
 
-      result.Code1 = code1.value.trim();
-      result.Code2 = code2.value.trim();
-
+      const code1Value = code1.value.trim();
+      const code2Value = code2.value.trim();
       const code3Value = code3.value.trim();
+
+      if (code1Value !== '') {
+        result.Code1 = code1Value;
+      }
+
+      if (code2Value !== '') {
+        result.Code2 = code2Value;
+      }
+
       if (code3Value !== '') {
         result.Code3 = code3Value;
       }
@@ -337,7 +335,7 @@ call Preload( "Int: 1030001" )`;
       code1.value = '';
       code2.value = '';
       code3.value = '';
-      stats.value = '1/2/3';
+      stats.value = '';
       mapStr.value = 'Str';
       mapAgi.value = 'Agi';
       mapInt.value = 'Int';
