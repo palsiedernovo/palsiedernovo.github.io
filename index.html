@@ -46,7 +46,7 @@
       font-weight: 700;
       margin-bottom: 8px;
     }
-    textarea, input {
+    textarea, input, select {
       width: 100%;
       border: 1px solid #d0d7e2;
       border-radius: 12px;
@@ -61,7 +61,7 @@
       line-height: 1.5;
       font-family: Consolas, monospace;
     }
-    input {
+    input, select {
       margin-bottom: 14px;
     }
     .btns {
@@ -100,17 +100,34 @@
       font-family: Consolas, monospace;
       font-size: 14px;
     }
-    
-    }
     .hint {
       margin-top: 8px;
       color: #666;
       font-size: 13px;
+      line-height: 1.5;
+    }
+    .stat-map {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    @media (max-width: 700px) {
+      .stat-map {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="card">
+      <h1>Preload → JSON 변환기</h1>
+      <p class="desc">
+        왼쪽에 <code>call Preload(...)</code> 내용을 붙여넣으면, 오른쪽에 JSON 형태로 자동 변환됩니다.
+      </p>
+    </div>
+
     <div class="card">
       <div>
         <label for="code1">Code1</label>
@@ -129,10 +146,43 @@
 
       <div>
         <label for="stats">Stats</label>
-        <input id="stats" type="text" placeholder="예: 1/2/3" value="1/2/3" />
+        <input id="stats" type="text" placeholder="자동 계산되거나 직접 입력 가능" value="1/2/3" />
       </div>
 
-      <div class="hint">Code3가 비어있으면 JSON 결과에서 Code3 항목은 출력되지 않습니다.</div>
+      <div>
+        <label>스탯 순서 변경</label>
+        <div class="stat-map">
+          <div>
+            <label for="mapStr">힘</label>
+            <select id="mapStr">
+              <option value="Str" selected>힘</option>
+              <option value="Agi">민</option>
+              <option value="Int">지</option>
+            </select>
+          </div>
+          <div>
+            <label for="mapAgi">민</label>
+            <select id="mapAgi">
+              <option value="Str">힘</option>
+              <option value="Agi" selected>민</option>
+              <option value="Int">지</option>
+            </select>
+          </div>
+          <div>
+            <label for="mapInt">지</label>
+            <select id="mapInt">
+              <option value="Str">힘</option>
+              <option value="Agi">민</option>
+              <option value="Int" selected>지</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint">
+        Code3가 비어있으면 JSON 결과에서 Code3 항목은 출력되지 않습니다.<br />
+        또한 <code>call Preload( "Str: ..." )</code>, <code>Agi</code>, <code>Int</code> 값이 있으면 Stats가 자동으로 조합됩니다.
+      </div>
     </div>
 
     <div class="grid">
@@ -146,7 +196,11 @@ call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
 
 call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
 
-call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )</textarea>
+call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
+
+call Preload( "Str: 1000001" )
+call Preload( "Agi: 500001" )
+call Preload( "Int: 1030001" )</textarea>
         <div class="btns">
           <button class="primary" id="copyBtn">JSON 복사</button>
           <button class="secondary" id="sampleBtn">샘플 넣기</button>
@@ -171,6 +225,9 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )</textarea>
     const code2 = document.getElementById('code2');
     const code3 = document.getElementById('code3');
     const stats = document.getElementById('stats');
+    const mapStr = document.getElementById('mapStr');
+    const mapAgi = document.getElementById('mapAgi');
+    const mapInt = document.getElementById('mapInt');
 
     const sampleText = `call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
 
@@ -180,7 +237,11 @@ call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
 
 call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
 
-call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
+call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
+
+call Preload( "Str: 1000001" )
+call Preload( "Agi: 500001" )
+call Preload( "Int: 1030001" )`;
 
     function defaultData() {
       return {
@@ -194,14 +255,15 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
         ULbag4Ch: '0/0/0/0/0/0',
         ULbag5: '0/0/0/0/0/0',
         ULbag5Ch: '0/0/0/0/0/0',
-        Stats: stats.value || '@@@/@@@/@@@',
-        Code1: code1.value || '@@@',
-        Code2: code2.value || '@@@'
+        Stats: '1/2/3',
+        Code1: '',
+        Code2: ''
       };
     }
 
     function parsePreload(text) {
       const result = defaultData();
+      const statValues = { Str: '', Agi: '', Int: '' };
       const normalized = text.replace(/[\u200B-\u200D\uFEFF]/g, ' ');
       const regex = /call\s+Preload\s*\(\s*"([^"]*)"\s*\)/gi;
       const matches = [...normalized.matchAll(regex)];
@@ -217,13 +279,31 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
           const key = pair.slice(0, idx).trim();
           const value = pair.slice(idx + 1).trim();
 
-          if (key) result[key] = value;
+          if (!key) return;
+
+          if (key === 'Str' || key === 'Agi' || key === 'Int') {
+            statValues[key] = value;
+          } else {
+            result[key] = value;
+          }
         });
       });
 
-      result.Stats = (stats.value || '@@@/@@@/@@@').trim();
-      result.Code1 = (code1.value || '@@@').trim();
-      result.Code2 = (code2.value || '@@@').trim();
+      const selectedStats = [
+        statValues[mapStr.value],
+        statValues[mapAgi.value],
+        statValues[mapInt.value]
+      ];
+
+      if (selectedStats.every(v => v !== '')) {
+        result.Stats = selectedStats.join('/');
+        stats.value = result.Stats;
+      } else {
+        result.Stats = (stats.value || '1/2/3').trim();
+      }
+
+      result.Code1 = code1.value.trim();
+      result.Code2 = code2.value.trim();
 
       const code3Value = code3.value.trim();
       if (code3Value !== '') {
@@ -243,6 +323,9 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
     code2.addEventListener('input', render);
     code3.addEventListener('input', render);
     stats.addEventListener('input', render);
+    mapStr.addEventListener('change', render);
+    mapAgi.addEventListener('change', render);
+    mapInt.addEventListener('change', render);
 
     sampleBtn.addEventListener('click', () => {
       input.value = sampleText;
@@ -254,7 +337,10 @@ call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )`;
       code1.value = '';
       code2.value = '';
       code3.value = '';
-      stats.value = '@@@/@@@/@@@';
+      stats.value = '1/2/3';
+      mapStr.value = 'Str';
+      mapAgi.value = 'Agi';
+      mapInt.value = 'Int';
       render();
     });
 
