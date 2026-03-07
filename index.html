@@ -124,6 +124,13 @@
 <body>
   <div class="wrap">
     <div class="card">
+      <h1>Preload → JSON 변환기</h1>
+      <p class="desc">
+        왼쪽에 <code>call Preload(...)</code> 내용을 붙여넣으면, 오른쪽에 JSON 형태로 자동 변환됩니다.
+      </p>
+    </div>
+
+    <div class="card">
       <div>
         <label for="code1">Code1</label>
         <input id="code1" type="text" placeholder="Code1 입력" />
@@ -145,10 +152,10 @@
       </div>
 
       <div>
-        <label>스탯 순서 변경</label>
+        <label>스탯 이동 설정</label>
         <div class="stat-map">
           <div>
-            <label for="mapStr">힘</label>
+            <label for="mapStr">힘 →</label>
             <select id="mapStr">
               <option value="Str" selected>힘</option>
               <option value="Agi">민</option>
@@ -156,7 +163,7 @@
             </select>
           </div>
           <div>
-            <label for="mapAgi">민</label>
+            <label for="mapAgi">민 →</label>
             <select id="mapAgi">
               <option value="Str">힘</option>
               <option value="Agi" selected>민</option>
@@ -164,7 +171,7 @@
             </select>
           </div>
           <div>
-            <label for="mapInt">지</label>
+            <label for="mapInt">지 →</label>
             <select id="mapInt">
               <option value="Str">힘</option>
               <option value="Agi">민</option>
@@ -270,10 +277,20 @@ call Preload( "Int: 1030001" )`;
         });
       });
 
+      const remappedStats = {
+        Str: '',
+        Agi: '',
+        Int: ''
+      };
+
+      remappedStats[mapStr.value] = statValues.Str;
+      remappedStats[mapAgi.value] = statValues.Agi;
+      remappedStats[mapInt.value] = statValues.Int;
+
       const selectedStats = [
-        statValues[mapStr.value],
-        statValues[mapAgi.value],
-        statValues[mapInt.value]
+        remappedStats.Str,
+        remappedStats.Agi,
+        remappedStats.Int
       ];
 
       if (selectedStats.every(v => v !== '')) {
