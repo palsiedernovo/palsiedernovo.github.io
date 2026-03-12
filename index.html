@@ -196,7 +196,7 @@ function ensureOption(el, value, type){
 
 function parsePreloadText(txt){
   function findPreloadValue(key){
-    const re = new RegExp(`call\s+Preload\s*\(\s*\"${key}:\s*([\s\S]*?)\"\s*\)`, 'i');
+    const re = new RegExp(`call\\s+Preload\\s*\\(\\s*\"${key}:\\s*([^\\"\\r\\n]+)\"\\s*\\)`, 'i');
     const m = txt.match(re);
     return m ? m[1].trim() : '';
   }
@@ -210,7 +210,7 @@ function parsePreloadText(txt){
     int: findPreloadValue('Int')
   };
   for(let i=1;i<=5;i++){
-    const re = new RegExp(`call\s+Preload\s*\(\s*\"ULbag${i}:([^,\\"]+),ULbag${i}Ch:([^\\"]+)\"\s*\)`, 'i');
+    const re = new RegExp(`call\\s+Preload\\s*\\(\\s*\"ULbag${i}:([^,\\\"\\r\\n]+),ULbag${i}Ch:([^\\\"\\r\\n]+)\"\\s*\\)`, 'i');
     const m = txt.match(re);
     parsed[`ULbag${i}`] = m ? m[1].trim() : '0/0/0/0/0/0';
     parsed[`ULbag${i}Ch`] = m ? m[2].trim() : '0/0/0/0/0/0';
