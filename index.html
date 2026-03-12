@@ -284,7 +284,9 @@ function decodeClassic(fullCode, id){
       num2 += 5;
       const blockRaw = sub(text, num2, num2 + saveLen[i]);
       text3 += reverseStr(padLeft(toNotation2(toIntByKey(blockRaw, PRESET.udg_keySet)), 30, '0'));
-    }else text3 += ''.padStart(30,'0');
+    }else{
+      text3 += ''.padStart(30,'0');
+    }
   }
   if(text3.length > count) text3 = text3.substring(0,count);
   const arr = new Array(count).fill(0);
@@ -372,12 +374,17 @@ function encodeClassic(named, id){
   for(let k=0;k<blockCount;k++) arr[k+1] = toInt2(reverseStr(sub(bitText, k*30, (k+1)*30)));
   let topBits = '1';
   let num3 = 1;
-  while(num3 < count && num3 < 30){ topBits += ((arr[num3]===0 && num3!==25) ? '0' : '1'); num3++; }
+  while(num3 < count && num3 < 30){
+    topBits += ((arr[num3]===0 && num3!==25) ? '0' : '1');
+    num3++;
+  }
   arr[1] = toInt2(reverseStr(topBits));
   arr[0] = toInt2(reverseStr(sub(topBits, 1, 25)));
   arr[25] = getChecksum(id, arr);
   let packed = '';
-  for(let i=0;i<count;i++) if(arr[i] !== 0) packed += padLeft(toNotationByKey(arr[i], keySet), saveLen[i], keySet[0] || '0');
+  for(let i=0;i<count;i++){
+    if(arr[i] !== 0) packed += padLeft(toNotationByKey(arr[i], keySet), saveLen[i], keySet[0] || '0');
+  }
   const parts = [];
   const chunkCount = Math.ceil(packed.length / 127);
   for(let j=0;j<chunkCount;j++) parts.push(sub(packed, j*127, (j+1)*127));
@@ -400,17 +407,8 @@ function buildServerJson(codeParts){
     Code1: codeParts.code1 || '@@@',
     Code2: codeParts.code2 || '@@@'
   };
-
-  if(codeParts.code3 && codeParts.code3.trim() !== ''){
-    obj.Code3 = codeParts.code3;
-  }
-
+  if(codeParts.code3 && codeParts.code3.trim() !== '') obj.Code3 = codeParts.code3;
   return obj;
-}/${$('jsonAgi').value || '@@@'}/${$('jsonInt').value || '@@@'}`,
-    Code1: codeParts.code1 || '@@@',
-    Code2: codeParts.code2 || '@@@',
-    Code3: codeParts.code3 || '@@@'
-  };
 }
 
 function loadAll(){
@@ -422,7 +420,7 @@ function loadAll(){
   const decoded = decodeClassic(fullCode, id);
   reflectDecoded(decoded);
   $('codeBox').textContent = JSON.stringify({ checksumMatched: decoded.checksumMatched, fullCodeLength: fullCode.length, parsedId: parsed.id, parsedStats: { Str: parsed.str, Agi: parsed.agi, Int: parsed.int } }, null, 2);
-  $('jsonBox').textContent = JSON.stringify(buildServerJson({code1:parsed.code1,code2:parsed.code2,code3:parsed.code3}), null, 2);
+  $('jsonBox').textContent = JSON.stringify(buildServerJson({code1:parsed.code1, code2:parsed.code2, code3:parsed.code3}), null, 2);
   setStatus(`불러오기 완료 / 닉네임: ${id}`);
 }
 
@@ -446,12 +444,17 @@ $('generateBtn').addEventListener('click', () => {
 });
 $('sampleBtn').addEventListener('click', () => { $('rawPreload').value = SAMPLE; });
 $('clearBtn').addEventListener('click', () => {
-  $('rawPreload').value=''; $('playerId').value=''; setStatus('아직 불러오지 않음');
+  $('rawPreload').value='';
+  $('playerId').value='';
+  setStatus('아직 불러오지 않음');
   ['beforeStr','beforeAgi','beforeInt','jsonStr','jsonAgi','jsonInt','codeStr','codeAgi','codeInt','heroSS'].forEach(id => $(id).value='');
   ['swapStr','swapAgi','swapInt'].forEach(id => $(id).value='');
   ['item1','item2','item3','item4','item5','item6','charNo'].forEach(id => $(id).value='0');
-  $('codeBox').textContent='아직 생성하지 않음'; $('jsonBox').textContent='아직 생성하지 않음';
-  originalStats = {Str:'',Agi:'',Int:''}; lastDecoded = null; ulbagData = {};
+  $('codeBox').textContent='아직 생성하지 않음';
+  $('jsonBox').textContent='아직 생성하지 않음';
+  originalStats = {Str:'',Agi:'',Int:''};
+  lastDecoded = null;
+  ulbagData = {};
 });
 $('copyJsonBtn').addEventListener('click', async () => {
   try{
