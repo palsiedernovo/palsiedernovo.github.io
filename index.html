@@ -385,7 +385,7 @@ function encodeClassic(named, id){
 }
 
 function buildServerJson(codeParts){
-  return {
+  const obj = {
     ULbag1: ulbagData.ULbag1 || '0/0/0/0/0/0',
     ULbag1Ch: ulbagData.ULbag1Ch || '0/0/0/0/0/0',
     ULbag2: ulbagData.ULbag2 || '0/0/0/0/0/0',
@@ -397,6 +397,16 @@ function buildServerJson(codeParts){
     ULbag5: ulbagData.ULbag5 || '0/0/0/0/0/0',
     ULbag5Ch: ulbagData.ULbag5Ch || '0/0/0/0/0/0',
     Stats: `${$('jsonStr').value || '@@@'}/${$('jsonAgi').value || '@@@'}/${$('jsonInt').value || '@@@'}`,
+    Code1: codeParts.code1 || '@@@',
+    Code2: codeParts.code2 || '@@@'
+  };
+
+  if(codeParts.code3 && codeParts.code3.trim() !== ''){
+    obj.Code3 = codeParts.code3;
+  }
+
+  return obj;
+}/${$('jsonAgi').value || '@@@'}/${$('jsonInt').value || '@@@'}`,
     Code1: codeParts.code1 || '@@@',
     Code2: codeParts.code2 || '@@@',
     Code3: codeParts.code3 || '@@@'
