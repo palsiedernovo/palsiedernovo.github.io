@@ -14,9 +14,11 @@ button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#ff
 button.secondary{background:#e5e7eb;color:#222}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
 pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:120px;overflow:auto;white-space:pre-wrap;word-break:break-word}
 .warn{background:#fff7ed;color:#9a3412;border:1px solid #fdba74;padding:10px 12px;border-radius:10px;line-height:1.5}
 .muted{color:#666;font-size:13px}
+.hidden{display:none}
 @media (max-width:900px){.grid,.grid2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -26,7 +28,11 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
 <div class="card">
   <h2>1. Preload 붙여넣기</h2>
   <textarea id="rawPreload" placeholder="call Preload(...) 전체 붙여넣기" style="min-height:380px"></textarea>
-  <div class="grid2">
+  <div class="btn-row">
+    <button id="loadBtn">불러오기</button>
+    <button class="secondary" id="sampleBtn">샘플</button>
+  </div>
+  <div class="grid2" style="margin-top:12px">
     <div>
       <label>닉네임(ID)</label>
       <input id="playerId" placeholder="Preload의 ID가 자동 반영됨">
@@ -35,12 +41,6 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
       <label>상태</label>
       <input id="statusText" readonly value="아직 불러오지 않음">
     </div>
-  </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button id="loadBtn">불러오기</button>
-    <button id="generateBtn">결과 생성</button>
-    <button class="secondary" id="sampleBtn">샘플</button>
-    <button class="secondary" id="clearBtn">전체 초기화</button>
   </div>
   <div class="warn" style="margin-top:10px">불러오기 = Preload 파싱 + 닉네임 반영 + 코드 디코드. 결과 생성 = 현재 화면 값으로 코드 인코드 + 서버 JSON 생성.</div>
 </div>
@@ -114,15 +114,22 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
     <div><label>아이템 5</label><select id="item5"></select></div>
     <div><label>아이템 6</label><select id="item6"></select></div>
   </div>
+  <div class="btn-row" style="margin-top:8px">
+    <button id="generateBtn">결과 생성</button>
+  </div>
 </div>
 
-<div class="card">
+<div class="card hidden">
   <h2>코드</h2>
   <pre id="codeBox">아직 생성하지 않음</pre>
 </div>
 
 <div class="card">
   <h2>서버 JSON</h2>
+  <div class="btn-row" style="margin-bottom:10px">
+    <button id="copyJsonBtn">JSON 복사</button>
+    <button id="clearBtn" class="secondary">전체 초기화</button>
+  </div>
   <pre id="jsonBox">아직 생성하지 않음</pre>
 </div>
 
@@ -137,7 +144,26 @@ const PRESET = {
   udg_saveData:[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,2,1,2,2,4,2,1,2,2,5,2,1,2,2,3,2,1,2,2,3,2,1,2,2,3,2,1,2,2,2,5,3,5,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1,2,1,2,1,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,1,2,2,2,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,3],
   udg_saveDataName:["코드 길이 체크 값","코드 길이 값 1","코드 길이 값 2","코드 길이 값 3","코드 길이 값 4","코드 길이 값 5","코드 길이 값 6","코드 길이 값 7","코드 길이 값 8","코드 길이 값 9","코드 길이 값 10","코드 길이 값 11","코드 길이 값 12","코드 길이 값 13","코드 길이 값 14","코드 길이 값 15","코드 길이 값 16","코드 길이 값 17","코드 길이 값 18","코드 길이 값 19","코드 길이 값 20","코드 길이 값 21","코드 길이 값 22","코드 길이 값 23","코드 길이 값 24","암호화 값","금","캐릭터 아이템 1","캐릭터 스택 1","배낭 아이템 1","배낭 스택 1","나무","캐릭터 아이템 2","캐릭터 스택 2","배낭 아이템 2","배낭 스택 2","경험치","캐릭터 아이템 3","캐릭터 스택 3","배낭 아이템 3","배낭 스택 3","힘","캐릭터 아이템 4","캐릭터 스택 4","배낭 아이템 4","배낭 스택 4","민첩성","캐릭터 아이템 5","캐릭터 스택 5","배낭 아이템 5","배낭 스택 5","지능","캐릭터 아이템 6","캐릭터 스택 6","배낭 아이템 6","배낭 스택 6","캐릭터 번호","세이브 횟수","HeroLv","HeroSExp1","HeroSExp2","HeroSExp3","HeroSExp4","HeroSLv1","HeroSLv2","HeroSLv3","HeroSLv4","HeroItemup1","HeroItemup2","HeroItemup3","HeroItemup4","HeroItemup5","BagItem7","BagCharge7","BagItem8","BagCharge8","BagItem9","BagCharge9","BagItem10","BagCharge10","BagItem11","BagCharge11","BagItem12","BagCharge12","Story","BagItem13","BagCharge13","BagItem14","BagCharge14","BagItem15","BagCharge15","BagItem16","BagCharge16","BagItem17","BagCharge17","BagItem18","BagCharge18","BagItem19","BagCharge19","BagItem20","BagCharge20","BagItem21","BagCharge21","BagItem22","BagCharge22","BagItem23","BagCharge23","BagItem24","BagCharge24","BagItem25","BagCharge25","BagItem26","BagCharge26","BagItem27","BagCharge27","BagItem28","BagCharge28","BagItem29","BagCharge29","BagItem30","BagCharge30","HeroRevive","HeroBag1","HeroBag2","HeroBag3","HeroBag4","HeroBag5","HeroBag6","HeroBag7","HeroBag8","HeroBag9","HeroBag10","HeroBag11","HeroBag12","HeroBagCharge1","HeroBagCharge2","HeroBagCharge3","HeroBagCharge4","HeroBagCharge5","HeroBagCharge6","HeroBagCharge7","HeroBagCharge8","HeroBagCharge9","HeroBagCharge10","HeroBagCharge11","HeroBagCharge12","HeroPoint1","HeroPoint2","HeroBag13","HeroBag14","HeroBag15","HeroBag16","HeroBag17","HeroBag18","HeroBagCharge13","HeroBagCharge14","HeroBagCharge15","HeroBagCharge16","HeroBagCharge17","HeroBagCharge18","HeroSK1","HeroSS","HeroBag19","HeroBag20","HeroBag21","HeroBag22","HeroBag23","HeroBag24","HeroBagCharge19","HeroBagCharge20","HeroBagCharge21","HeroBagCharge22","HeroBagCharge23","HeroBagCharge24","HeroSK2","HeroBag25","HeroBag26","HeroBag27","HeroBag28","HeroBag29","HeroBag30","HeroBagCharge25","HeroBagCharge26","HeroBagCharge27","HeroBagCharge28","HeroBagCharge29","HeroBagCharge30","HeroBag31","HeroBag32","HeroBag33","HeroBag34","HeroBag35","HeroBag36","HeroBagCharge31","HeroBagCharge32","HeroBagCharge33","HeroBagCharge34","HeroBagCharge35","HeroBagCharge36","영혼석"]
 };
-const SAMPLE = `call Preload( "Code1: aaa9{]#80v]d(O]6<g&S%LL6ig6.nkg*-DOaa2p-aaUv}a*&eg#92!,g9l8egNx2_t@8g!x-iygqx=>yg[xkDkgbxa+aaa;nacdg3iprg3;F8,J!Da,B-R(,O,O,m,m " )\n\ncall Preload( "Code2: p%pipZp,p-2NgZ}sg@CEgI~E5g}3g9axg]gRa92TLA2)a}}taO}f5*2[sog2x}xxgOxg;xg/xggxpR'ha*jgax9r2e}~28Yh2>r:]ZYdlROkp2S2eg%Yh)xYe}j}2g6 " )\n\ncall Preload( "Code3: g%gox " )\n\ncall Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )\n\ncall Preload( "ULbag2:650/647/646/709/477/0,ULbag2Ch:3191/3164/0/0/1617/0" )\n\ncall Preload( "ULbag3:558/643/678/679/646/0,ULbag3Ch:0/0/1551/1483/0/0" )\n\ncall Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )\n\ncall Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )\n\ncall Preload( "ID: dlwnsah1010" )\ncall Preload( "Str: 666621" )\ncall Preload( "Agi: 250911" )\ncall Preload( "Int: 255271" )`;
+const SAMPLE = `call Preload( "Code1: aaa9{]#80v]d(O]6<g&S%LL6ig6.nkg*-DOaa2p-aaUv}a*&eg#92!,g9l8egNx2_t@8g!x-iygqx=>yg[xkDkgbxa+aaa;nacdg3iprg3;F8,J!Da,B-R(,O,O,m,m " )
+
+call Preload( "Code2: p%pipZp,p-2NgZ}sg@CEgI~E5g}3g9axg]gRa92TLA2)a}}taO}f5*2[sog2x}xxgOxg;xg/xggxpR'ha*jgax9r2e}~28Yh2>r:]ZYdlROkp2S2eg%Yh)xYe}j}2g6 " )
+
+call Preload( "Code3: g%gox " )
+
+call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag2:650/647/646/709/477/0,ULbag2Ch:3191/3164/0/0/1617/0" )
+
+call Preload( "ULbag3:558/643/678/679/646/0,ULbag3Ch:0/0/1551/1483/0/0" )
+
+call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
+
+call Preload( "ID: dlwnsah1010" )
+call Preload( "Str: 666621" )
+call Preload( "Agi: 250911" )
+call Preload( "Int: 255271" )`;
 
 const $ = id => document.getElementById(id);
 let itemOptions = [{value:0,label:'(없음)'}];
@@ -194,18 +220,17 @@ function ensureOption(el, value, type){
   }
 }
 
-function parsePreloadText(txt){
-  function escapeRegExp(str){
-    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+function escapeRegExp(str){
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
+function parsePreloadText(txt){
   function findPreloadValue(key){
     const safeKey = escapeRegExp(key);
     const re = new RegExp('call\\s+Preload\\s*\\(\\s*"' + safeKey + ':\\s*([^"\\r\\n]+)"\\s*\\)', 'i');
     const m = txt.match(re);
     return m ? m[1].trim() : '';
   }
-
   const parsed = {
     code1: findPreloadValue('Code1'),
     code2: findPreloadValue('Code2'),
@@ -215,14 +240,12 @@ function parsePreloadText(txt){
     agi: findPreloadValue('Agi'),
     int: findPreloadValue('Int')
   };
-
   for(let i=1;i<=5;i++){
     const re = new RegExp('call\\s+Preload\\s*\\(\\s*"ULbag' + i + ':([^,\\"\\r\\n]+),ULbag' + i + 'Ch:([^\\"\\r\\n]+)"\\s*\\)', 'i');
     const m = txt.match(re);
     parsed[`ULbag${i}`] = m ? m[1].trim() : '0/0/0/0/0/0';
     parsed[`ULbag${i}Ch`] = m ? m[2].trim() : '0/0/0/0/0/0';
   }
-
   return parsed;
 }
 
@@ -297,25 +320,16 @@ function getSwapMap(){
 
 function applySwap(){
   const map = getSwapMap();
-
-  // 항상 변경전 스탯을 기준 소스로 사용해야 드롭다운을 여러 번 바꿔도 값이 꼬이지 않음
   const source = {
     힘: String($('beforeStr').value || ''),
     민: String($('beforeAgi').value || ''),
     지: String($('beforeInt').value || '')
   };
-
-  const next = {
-    힘: source.힘,
-    민: source.민,
-    지: source.지
-  };
-
+  const next = { 힘: source.힘, 민: source.민, 지: source.지 };
   Object.entries(map).forEach(([from, to]) => {
     if (!to || !Object.prototype.hasOwnProperty.call(next, to)) return;
     next[to] = source[from];
   });
-
   $('jsonStr').value = next.힘;
   $('jsonAgi').value = next.민;
   $('jsonInt').value = next.지;
@@ -397,12 +411,7 @@ function loadAll(){
   $('playerId').value = id;
   const decoded = decodeClassic(fullCode, id);
   reflectDecoded(decoded);
-  $('codeBox').textContent = JSON.stringify({
-    checksumMatched: decoded.checksumMatched,
-    fullCodeLength: fullCode.length,
-    parsedId: parsed.id,
-    parsedStats: { Str: parsed.str, Agi: parsed.agi, Int: parsed.int }
-  }, null, 2);
+  $('codeBox').textContent = JSON.stringify({ checksumMatched: decoded.checksumMatched, fullCodeLength: fullCode.length, parsedId: parsed.id, parsedStats: { Str: parsed.str, Agi: parsed.agi, Int: parsed.int } }, null, 2);
   $('jsonBox').textContent = JSON.stringify(buildServerJson({code1:parsed.code1,code2:parsed.code2,code3:parsed.code3}), null, 2);
   setStatus(`불러오기 완료 / 닉네임: ${id}`);
 }
@@ -432,7 +441,15 @@ $('clearBtn').addEventListener('click', () => {
   ['swapStr','swapAgi','swapInt'].forEach(id => $(id).value='');
   ['item1','item2','item3','item4','item5','item6','charNo'].forEach(id => $(id).value='0');
   $('codeBox').textContent='아직 생성하지 않음'; $('jsonBox').textContent='아직 생성하지 않음';
-  originalStats = {Str:'',Agi:'',Int:''}; lastDecoded = null;
+  originalStats = {Str:'',Agi:'',Int:''}; lastDecoded = null; ulbagData = {};
+});
+$('copyJsonBtn').addEventListener('click', async () => {
+  try{
+    await navigator.clipboard.writeText($('jsonBox').textContent || '');
+    setStatus('JSON 복사 완료');
+  }catch(e){
+    setStatus('JSON 복사 실패');
+  }
 });
 ['jsonStr','jsonAgi','jsonInt'].forEach(id => $(id).addEventListener('input', syncCodeStats));
 ['swapStr','swapAgi','swapInt'].forEach(id => $(id).addEventListener('change', applySwap));
