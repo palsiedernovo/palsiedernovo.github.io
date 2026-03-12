@@ -4,220 +4,415 @@
 <meta charset="UTF-8">
 <title>Save Code Workbench</title>
 <style>
-body{font-family:Arial,Malgun Gothic;background:#f5f7fb;margin:0}
-.wrap{max-width:1000px;margin:24px auto;padding:10px}
+body{font-family:Arial,"Malgun Gothic",sans-serif;background:#f5f7fb;margin:0}
+.wrap{max-width:1100px;margin:24px auto;padding:10px}
 .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
 h2{margin:0 0 10px}
-textarea,input,select{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-bottom:10px}
+label{display:block;font-weight:700;margin-bottom:6px}
+textarea,input,select{width:100%;padding:10px 12px;border:1px solid #cfd6df;border-radius:8px;margin-bottom:10px;box-sizing:border-box;min-width:0}
 button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
 button.secondary{background:#e5e7eb;color:#222}
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:120px;overflow:auto}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:120px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.warn{background:#fff7ed;color:#9a3412;border:1px solid #fdba74;padding:10px 12px;border-radius:10px;line-height:1.5}
+.muted{color:#666;font-size:13px}
+@media (max-width:900px){.grid,.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <div class="card">
-<h2>1. Preload 붙여넣기</h2>
-<textarea id="rawPreload" placeholder="call Preload(...) 전체 붙여넣기"></textarea>
-<label>닉네임(ID)</label>
-<input id="playerId">
-<button id="loadBtn">불러오기</button>
-<button class="secondary" id="sampleBtn">샘플</button>
+  <h2>1. Preload 붙여넣기</h2>
+  <textarea id="rawPreload" placeholder="call Preload(...) 전체 붙여넣기" style="min-height:380px"></textarea>
+  <div class="grid2">
+    <div>
+      <label>닉네임(ID)</label>
+      <input id="playerId" placeholder="Preload의 ID가 자동 반영됨">
+    </div>
+    <div>
+      <label>상태</label>
+      <input id="statusText" readonly value="아직 불러오지 않음">
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button id="loadBtn">불러오기</button>
+    <button id="generateBtn">결과 생성</button>
+    <button class="secondary" id="sampleBtn">샘플</button>
+    <button class="secondary" id="clearBtn">전체 초기화</button>
+  </div>
+  <div class="warn" style="margin-top:10px">불러오기 = Preload 파싱 + 닉네임 반영 + 코드 디코드. 결과 생성 = 현재 화면 값으로 코드 인코드 + 서버 JSON 생성.</div>
 </div>
 
 <div class="card">
-<h2>2. 스탯</h2>
-<div class="grid">
-<div>
-<label>변경전 힘</label>
-<input id="beforeStr" readonly>
-</div>
-<div>
-<label>변경전 민</label>
-<input id="beforeAgi" readonly>
-</div>
-<div>
-<label>변경전 지</label>
-<input id="beforeInt" readonly>
-</div>
-</div>
-
-<div class="grid">
-<div>
-<label>JSON 힘</label>
-<input id="jsonStr">
-</div>
-<div>
-<label>JSON 민</label>
-<input id="jsonAgi">
-</div>
-<div>
-<label>JSON 지</label>
-<input id="jsonInt">
-</div>
-</div>
-
-<div class="grid">
-<div>
-<label>코드용 힘</label>
-<input id="codeStr" readonly>
-</div>
-<div>
-<label>코드용 민</label>
-<input id="codeAgi" readonly>
-</div>
-<div>
-<label>코드용 지</label>
-<input id="codeInt" readonly>
-</div>
-</div>
-
-<div class="grid">
-<div>
-<label>힘 →</label>
-<select id="swapStr">
-<option value="">변경없음</option>
-<option value="힘">힘</option>
-<option value="민">민</option>
-<option value="지">지</option>
-</select>
-</div>
-<div>
-<label>민 →</label>
-<select id="swapAgi">
-<option value="">변경없음</option>
-<option value="힘">힘</option>
-<option value="민">민</option>
-<option value="지">지</option>
-</select>
-</div>
-<div>
-<label>지 →</label>
-<select id="swapInt">
-<option value="">변경없음</option>
-<option value="힘">힘</option>
-<option value="민">민</option>
-<option value="지">지</option>
-</select>
-</div>
-</div>
+  <h2>2. 스탯</h2>
+  <div class="grid">
+    <div><label>변경전 힘</label><input id="beforeStr" readonly></div>
+    <div><label>변경전 민</label><input id="beforeAgi" readonly></div>
+    <div><label>변경전 지</label><input id="beforeInt" readonly></div>
+  </div>
+  <div class="grid">
+    <div><label>JSON 힘</label><input id="jsonStr"></div>
+    <div><label>JSON 민</label><input id="jsonAgi"></div>
+    <div><label>JSON 지</label><input id="jsonInt"></div>
+  </div>
+  <div class="grid">
+    <div><label>코드용 힘</label><input id="codeStr" readonly></div>
+    <div><label>코드용 민</label><input id="codeAgi" readonly></div>
+    <div><label>코드용 지</label><input id="codeInt" readonly></div>
+  </div>
+  <div class="grid">
+    <div>
+      <label>힘 →</label>
+      <select id="swapStr">
+        <option value="">변경없음</option>
+        <option value="힘">힘</option>
+        <option value="민">민</option>
+        <option value="지">지</option>
+      </select>
+    </div>
+    <div>
+      <label>민 →</label>
+      <select id="swapAgi">
+        <option value="">변경없음</option>
+        <option value="힘">힘</option>
+        <option value="민">민</option>
+        <option value="지">지</option>
+      </select>
+    </div>
+    <div>
+      <label>지 →</label>
+      <select id="swapInt">
+        <option value="">변경없음</option>
+        <option value="힘">힘</option>
+        <option value="민">민</option>
+        <option value="지">지</option>
+      </select>
+    </div>
+  </div>
+  <div class="muted">JSON 스탯은 실제 서버 반영값이고, 코드용 스탯은 728999 cap이 적용된다.</div>
 </div>
 
 <div class="card">
-<h2>3. 아이템</h2>
-<div class="grid">
-<select id="item1"></select>
-<select id="item2"></select>
-<select id="item3"></select>
-<select id="item4"></select>
-<select id="item5"></select>
-<select id="item6"></select>
-</div>
+  <h2>3. 캐릭터 / HeroSS / 아이템</h2>
+  <div class="grid2">
+    <div>
+      <label>캐릭터 번호</label>
+      <select id="charNo"></select>
+    </div>
+    <div>
+      <label>HeroSS</label>
+      <input id="heroSS" type="number">
+    </div>
+  </div>
+  <div class="grid">
+    <div><label>아이템 1</label><select id="item1"></select></div>
+    <div><label>아이템 2</label><select id="item2"></select></div>
+    <div><label>아이템 3</label><select id="item3"></select></div>
+    <div><label>아이템 4</label><select id="item4"></select></div>
+    <div><label>아이템 5</label><select id="item5"></select></div>
+    <div><label>아이템 6</label><select id="item6"></select></div>
+  </div>
 </div>
 
 <div class="card">
-<h2>4. 결과 생성</h2>
-<button id="generateBtn">코드 + JSON 생성</button>
+  <h2>코드</h2>
+  <pre id="codeBox">아직 생성하지 않음</pre>
 </div>
 
 <div class="card">
-<h2>코드</h2>
-<pre id="codeBox"></pre>
-</div>
-
-<div class="card">
-<h2>서버 JSON</h2>
-<pre id="jsonBox"></pre>
+  <h2>서버 JSON</h2>
+  <pre id="jsonBox">아직 생성하지 않음</pre>
 </div>
 
 </div>
 
 <script>
-const CAP=728999
+const CAP = 728999;
+const PRESET = {
+  udg_MapName:"NarutoRPG",
+  udg_keySet:"a9rpY2}g5f,ZRo6]%:Wl0Vs37ti4nz=kLBX.q{;u^1A!OFDv&Jhd+mwc('NEU$QC~KMj[T)/_GI@#H8Pey-S?b<>*x",
+  udg_saveDataVersion:3,
+  udg_saveData:[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,2,1,2,2,4,2,1,2,2,5,2,1,2,2,3,2,1,2,2,3,2,1,2,2,3,2,1,2,2,2,5,3,5,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1,2,1,2,1,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,1,2,2,2,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,3],
+  udg_saveDataName:["코드 길이 체크 값","코드 길이 값 1","코드 길이 값 2","코드 길이 값 3","코드 길이 값 4","코드 길이 값 5","코드 길이 값 6","코드 길이 값 7","코드 길이 값 8","코드 길이 값 9","코드 길이 값 10","코드 길이 값 11","코드 길이 값 12","코드 길이 값 13","코드 길이 값 14","코드 길이 값 15","코드 길이 값 16","코드 길이 값 17","코드 길이 값 18","코드 길이 값 19","코드 길이 값 20","코드 길이 값 21","코드 길이 값 22","코드 길이 값 23","코드 길이 값 24","암호화 값","금","캐릭터 아이템 1","캐릭터 스택 1","배낭 아이템 1","배낭 스택 1","나무","캐릭터 아이템 2","캐릭터 스택 2","배낭 아이템 2","배낭 스택 2","경험치","캐릭터 아이템 3","캐릭터 스택 3","배낭 아이템 3","배낭 스택 3","힘","캐릭터 아이템 4","캐릭터 스택 4","배낭 아이템 4","배낭 스택 4","민첩성","캐릭터 아이템 5","캐릭터 스택 5","배낭 아이템 5","배낭 스택 5","지능","캐릭터 아이템 6","캐릭터 스택 6","배낭 아이템 6","배낭 스택 6","캐릭터 번호","세이브 횟수","HeroLv","HeroSExp1","HeroSExp2","HeroSExp3","HeroSExp4","HeroSLv1","HeroSLv2","HeroSLv3","HeroSLv4","HeroItemup1","HeroItemup2","HeroItemup3","HeroItemup4","HeroItemup5","BagItem7","BagCharge7","BagItem8","BagCharge8","BagItem9","BagCharge9","BagItem10","BagCharge10","BagItem11","BagCharge11","BagItem12","BagCharge12","Story","BagItem13","BagCharge13","BagItem14","BagCharge14","BagItem15","BagCharge15","BagItem16","BagCharge16","BagItem17","BagCharge17","BagItem18","BagCharge18","BagItem19","BagCharge19","BagItem20","BagCharge20","BagItem21","BagCharge21","BagItem22","BagCharge22","BagItem23","BagCharge23","BagItem24","BagCharge24","BagItem25","BagCharge25","BagItem26","BagCharge26","BagItem27","BagCharge27","BagItem28","BagCharge28","BagItem29","BagCharge29","BagItem30","BagCharge30","HeroRevive","HeroBag1","HeroBag2","HeroBag3","HeroBag4","HeroBag5","HeroBag6","HeroBag7","HeroBag8","HeroBag9","HeroBag10","HeroBag11","HeroBag12","HeroBagCharge1","HeroBagCharge2","HeroBagCharge3","HeroBagCharge4","HeroBagCharge5","HeroBagCharge6","HeroBagCharge7","HeroBagCharge8","HeroBagCharge9","HeroBagCharge10","HeroBagCharge11","HeroBagCharge12","HeroPoint1","HeroPoint2","HeroBag13","HeroBag14","HeroBag15","HeroBag16","HeroBag17","HeroBag18","HeroBagCharge13","HeroBagCharge14","HeroBagCharge15","HeroBagCharge16","HeroBagCharge17","HeroBagCharge18","HeroSK1","HeroSS","HeroBag19","HeroBag20","HeroBag21","HeroBag22","HeroBag23","HeroBag24","HeroBagCharge19","HeroBagCharge20","HeroBagCharge21","HeroBagCharge22","HeroBagCharge23","HeroBagCharge24","HeroSK2","HeroBag25","HeroBag26","HeroBag27","HeroBag28","HeroBag29","HeroBag30","HeroBagCharge25","HeroBagCharge26","HeroBagCharge27","HeroBagCharge28","HeroBagCharge29","HeroBagCharge30","HeroBag31","HeroBag32","HeroBag33","HeroBag34","HeroBag35","HeroBag36","HeroBagCharge31","HeroBagCharge32","HeroBagCharge33","HeroBagCharge34","HeroBagCharge35","HeroBagCharge36","영혼석"]
+};
+const SAMPLE = `call Preload( "Code1: aaa9{]#80v]d(O]6<g&S%LL6ig6.nkg*-DOaa2p-aaUv}a*&eg#92!,g9l8egNx2_t@8g!x-iygqx=>yg[xkDkgbxa+aaa;nacdg3iprg3;F8,J!Da,B-R(,O,O,m,m " )\n\ncall Preload( "Code2: p%pipZp,p-2NgZ}sg@CEgI~E5g}3g9axg]gRa92TLA2)a}}taO}f5*2[sog2x}xxgOxg;xg/xggxpR'ha*jgax9r2e}~28Yh2>r:]ZYdlROkp2S2eg%Yh)xYe}j}2g6 " )\n\ncall Preload( "Code3: g%gox " )\n\ncall Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )\n\ncall Preload( "ULbag2:650/647/646/709/477/0,ULbag2Ch:3191/3164/0/0/1617/0" )\n\ncall Preload( "ULbag3:558/643/678/679/646/0,ULbag3Ch:0/0/1551/1483/0/0" )\n\ncall Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )\n\ncall Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )\n\ncall Preload( "ID: dlwnsah1010" )\ncall Preload( "Str: 666621" )\ncall Preload( "Agi: 250911" )\ncall Preload( "Int: 255271" )`;
 
-function cap(v){
-v=Number(v||0)
-return v>CAP?CAP:v
+const $ = id => document.getElementById(id);
+let itemOptions = [{value:0,label:'(없음)'}];
+let charOptions = [{value:0,label:'(선택 안 함)'}];
+let ulbagData = {};
+let originalStats = {Str:'',Agi:'',Int:''};
+let lastDecoded = null;
+
+function setStatus(msg){ $('statusText').value = msg; }
+function cap(v){ v = Number(v || 0); return Number.isFinite(v) ? Math.min(v, CAP) : 0; }
+function syncCodeStats(){ $('codeStr').value = cap($('jsonStr').value); $('codeAgi').value = cap($('jsonAgi').value); $('codeInt').value = cap($('jsonInt').value); }
+function reverseStr(v){ return String(v).split('').reverse().join(''); }
+function sub(v,s,e){ const t = String(v || ''); return t.substring(Math.max(0,s), Math.max(0, Math.min(e, t.length))); }
+function toIntByKey(input,keySet){ if(!input) return 0; let num=0, base=keySet.length; for(const ch of String(input)){ const idx=keySet.indexOf(ch); num*=base; num += idx===-1 ? base : idx; } return num; }
+function toNotation2(n){ return Number(n).toString(2); }
+function toInt2(v){ return parseInt(String(v || '0'), 2) || 0; }
+function toNotationByKey(n,keySet){ const base=keySet.length; let num=Number(n); if(!Number.isFinite(num) || num<=0) return keySet[0] || ''; let out=''; while(num>0){ const mod=num%base; out=keySet[mod]+out; num=Math.floor(num/base); } return out; }
+function padLeft(v,len,ch){ return String(v).padStart(len,ch); }
+function dataOnBoolean(idx){ return idx>=0 && idx<26; }
+function nameToInteger(name){ let sum=0; for(const ch of String(name || '')) sum += ch.charCodeAt(0); return sum; }
+function getChecksum(id,data){ let num = nameToInteger(PRESET.udg_MapName) + nameToInteger(id) + (PRESET.udg_saveDataVersion % 1000); const modBase = Math.pow(PRESET.udg_keySet.length,2); for(let i=0;i<data.length;i++){ if(data[i]!==0 && i!==25) num += (data[i] % modBase) * (((i+1)%5)+1); } return num; }
+
+async function loadMasterJson(){
+  try{
+    const res = await fetch('./items.json');
+    const json = await res.json();
+    if(json && Array.isArray(json.DataDescriptions)){
+      const itemDesc = json.DataDescriptions.find(d => Array.isArray(d.Index) && d.Index.includes(28));
+      const charDesc = json.DataDescriptions.find(d => Array.isArray(d.Index) && d.Index.includes(57));
+      itemOptions = [{value:0,label:'(없음)'}].concat((itemDesc?.Datas || []).map(d => ({value:Number(d.Index), label:String(d.Tip || `아이템 ID ${d.Index}`)})));
+      charOptions = [{value:0,label:'(선택 안 함)'}].concat((charDesc?.Datas || []).map(d => ({value:Number(d.Index), label:String(d.Tip || `캐릭터 ${d.Index}`)})));
+    }
+  }catch(e){
+    console.warn('items.json 로드 실패', e);
+  }
+  populateSelects();
 }
 
-function updateCodeStats(){
-const s=document.getElementById('jsonStr').value
-const a=document.getElementById('jsonAgi').value
-const i=document.getElementById('jsonInt').value
-
-document.getElementById('codeStr').value=cap(s)
-document.getElementById('codeAgi').value=cap(a)
-document.getElementById('codeInt').value=cap(i)
+function populateSelects(){
+  ['item1','item2','item3','item4','item5','item6'].forEach(id => {
+    const el = $(id);
+    el.innerHTML = itemOptions.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+  });
+  $('charNo').innerHTML = charOptions.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 }
 
-function parsePreload(){
-const txt=document.getElementById('rawPreload').value
-
-function find(k){
-const m=txt.match(new RegExp(k+":\\s*([^\\n\\r]+)"))
-return m?m[1].trim():''
+function ensureOption(el, value, type){
+  const exists = Array.from(el.options).some(o => String(o.value) === String(value));
+  if(!exists){
+    const opt = document.createElement('option');
+    opt.value = String(value);
+    opt.textContent = type === 'char' ? `캐릭터 ID ${value}` : `아이템 ID ${value}`;
+    el.insertBefore(opt, el.firstChild);
+  }
 }
 
-const str=find("Str")
-const agi=find("Agi")
-const int=find("Int")
-const id=find("ID")
-
-if(id)document.getElementById('playerId').value=id
-
-document.getElementById('beforeStr').value=str
-document.getElementById('beforeAgi').value=agi
-document.getElementById('beforeInt').value=int
-
-document.getElementById('jsonStr').value=str
-document.getElementById('jsonAgi').value=agi
-document.getElementById('jsonInt').value=int
-
-updateCodeStats()
+function parsePreloadText(txt){
+  function findPreloadValue(key){
+    const re = new RegExp(`call\s+Preload\s*\(\s*\"${key}:\s*([\s\S]*?)\"\s*\)`, 'i');
+    const m = txt.match(re);
+    return m ? m[1].trim() : '';
+  }
+  const parsed = {
+    code1: findPreloadValue('Code1'),
+    code2: findPreloadValue('Code2'),
+    code3: findPreloadValue('Code3'),
+    id: findPreloadValue('ID'),
+    str: findPreloadValue('Str'),
+    agi: findPreloadValue('Agi'),
+    int: findPreloadValue('Int')
+  };
+  for(let i=1;i<=5;i++){
+    const re = new RegExp(`call\s+Preload\s*\(\s*\"ULbag${i}:([^,\\"]+),ULbag${i}Ch:([^\\"]+)\"\s*\)`, 'i');
+    const m = txt.match(re);
+    parsed[`ULbag${i}`] = m ? m[1].trim() : '0/0/0/0/0/0';
+    parsed[`ULbag${i}Ch`] = m ? m[2].trim() : '0/0/0/0/0/0';
+  }
+  return parsed;
 }
 
-function buildJson(){
-return {
-Stats:document.getElementById('jsonStr').value+"/"+
-      document.getElementById('jsonAgi').value+"/"+
-      document.getElementById('jsonInt').value,
-Code1:"@@@",
-Code2:"@@@",
-Code3:"@@@",
-ULbag1:"0/0/0/0/0/0",
-ULbag1Ch:"0/0/0/0/0/0",
-ULbag2:"0/0/0/0/0/0",
-ULbag2Ch:"0/0/0/0/0/0",
-ULbag3:"0/0/0/0/0/0",
-ULbag3Ch:"0/0/0/0/0/0",
-ULbag4:"0/0/0/0/0/0",
-ULbag4Ch:"0/0/0/0/0/0",
-ULbag5:"0/0/0/0/0/0",
-ULbag5Ch:"0/0/0/0/0/0"
-}
-}
-
-function generate(){
-updateCodeStats()
-const j=buildJson()
-
-document.getElementById('jsonBox').textContent=
-JSON.stringify(j,null,2)
-
-document.getElementById('codeBox').textContent=
-"Code 생성 로직 연결 필요"
+function applyPreload(parsed){
+  if(parsed.id && !$('playerId').value) $('playerId').value = parsed.id;
+  originalStats = { Str: parsed.str || '0', Agi: parsed.agi || '0', Int: parsed.int || '0' };
+  ulbagData = {
+    ULbag1: parsed.ULbag1, ULbag1Ch: parsed.ULbag1Ch,
+    ULbag2: parsed.ULbag2, ULbag2Ch: parsed.ULbag2Ch,
+    ULbag3: parsed.ULbag3, ULbag3Ch: parsed.ULbag3Ch,
+    ULbag4: parsed.ULbag4, ULbag4Ch: parsed.ULbag4Ch,
+    ULbag5: parsed.ULbag5, ULbag5Ch: parsed.ULbag5Ch
+  };
+  $('beforeStr').value = originalStats.Str;
+  $('beforeAgi').value = originalStats.Agi;
+  $('beforeInt').value = originalStats.Int;
+  $('jsonStr').value = originalStats.Str;
+  $('jsonAgi').value = originalStats.Agi;
+  $('jsonInt').value = originalStats.Int;
+  syncCodeStats();
+  return (parsed.code1 || '') + (parsed.code2 || '') + (parsed.code3 || '');
 }
 
-document.getElementById('loadBtn').onclick=parsePreload
+function decodeClassic(fullCode, id){
+  const saveLen = PRESET.udg_saveData;
+  const saveName = PRESET.udg_saveDataName;
+  const count = saveLen.length;
+  const text = String(fullCode || '').replace(/[\r\n\t ]/g,'');
+  const num = Math.ceil(count / 30);
+  const headerRaw = sub(text, 0, saveLen[0]);
+  const text2 = reverseStr(padLeft(toNotation2(toIntByKey(headerRaw, PRESET.udg_keySet)), num, '0'));
+  let num2 = 0;
+  let text3 = '';
+  for(let i=0;i<num;i++){
+    if(text2[i] === '1'){
+      num2 += 5;
+      const blockRaw = sub(text, num2, num2 + saveLen[i]);
+      text3 += reverseStr(padLeft(toNotation2(toIntByKey(blockRaw, PRESET.udg_keySet)), 30, '0'));
+    }else text3 += ''.padStart(30,'0');
+  }
+  if(text3.length > count) text3 = text3.substring(0,count);
+  const arr = new Array(count).fill(0);
+  let cursor = 0;
+  for(let i=0;i<text3.length;i++){
+    if(text3[i] === '1'){
+      const raw = sub(text, cursor, cursor + saveLen[i]);
+      arr[i] = toIntByKey(raw, PRESET.udg_keySet);
+      cursor += saveLen[i];
+    }
+  }
+  const named = {};
+  for(let i=0;i<count;i++) named[saveName[i]] = arr[i];
+  return { data: arr, named, checksumMatched: (arr[25] ?? null) === getChecksum(id, arr) };
+}
 
-document.getElementById('generateBtn').onclick=generate
+function reflectDecoded(decoded){
+  lastDecoded = decoded;
+  const d = decoded.data;
+  const itemIdx = [27,32,37,42,47,52];
+  ['item1','item2','item3','item4','item5','item6'].forEach((id, n) => {
+    ensureOption($(id), d[itemIdx[n]] ?? 0, 'item');
+    $(id).value = String(d[itemIdx[n]] ?? 0);
+  });
+  ensureOption($('charNo'), d[56] ?? 0, 'char');
+  $('charNo').value = String(d[56] ?? 0);
+  $('heroSS').value = String(d[161] ?? 0);
+}
 
-['jsonStr','jsonAgi','jsonInt'].forEach(id=>{
-document.getElementById(id).addEventListener('input',updateCodeStats)
-})
+function getSwapMap(){
+  return { 힘: $('swapStr').value, 민: $('swapAgi').value, 지: $('swapInt').value };
+}
+
+function applySwap(){
+  const map = getSwapMap();
+  const original = { 힘: String($('jsonStr').value || ''), 민: String($('jsonAgi').value || ''), 지: String($('jsonInt').value || '') };
+  const next = { ...original };
+  Object.entries(map).forEach(([from,to]) => { if(to && Object.prototype.hasOwnProperty.call(next,to)) next[to] = original[from]; });
+  $('jsonStr').value = next.힘;
+  $('jsonAgi').value = next.민;
+  $('jsonInt').value = next.지;
+  syncCodeStats();
+}
+
+function applyUiToNamed(named){
+  const names = PRESET.udg_saveDataName;
+  named[names[27]] = Number($('item1').value || 0);
+  named[names[32]] = Number($('item2').value || 0);
+  named[names[37]] = Number($('item3').value || 0);
+  named[names[42]] = Number($('item4').value || 0);
+  named[names[47]] = Number($('item5').value || 0);
+  named[names[52]] = Number($('item6').value || 0);
+  named[names[41]] = cap($('jsonStr').value || 0);
+  named[names[46]] = cap($('jsonAgi').value || 0);
+  named[names[51]] = cap($('jsonInt').value || 0);
+  named[names[56]] = Number($('charNo').value || 0);
+  named[names[161]] = Number($('heroSS').value || 0);
+  return named;
+}
+
+function encodeClassic(named, id){
+  const saveLen = PRESET.udg_saveData;
+  const saveName = PRESET.udg_saveDataName;
+  const count = saveLen.length;
+  const keySet = PRESET.udg_keySet;
+  const arr = new Array(count).fill(0);
+  for(let i=0;i<count;i++){
+    if(!dataOnBoolean(i)){
+      const field = saveName[i];
+      const raw = Number(named[field] ?? 0);
+      const max = Math.pow(keySet.length, saveLen[i]);
+      arr[i] = raw < max ? raw : Math.floor(max - 1);
+    }
+  }
+  let bitText = '';
+  for(let j=0;j<count;j++) bitText += ((arr[j]===0 && !dataOnBoolean(j)) ? '0' : '1');
+  const blockCount = Math.ceil(count/30);
+  for(let k=0;k<blockCount;k++) arr[k+1] = toInt2(reverseStr(sub(bitText, k*30, (k+1)*30)));
+  let topBits = '1';
+  let num3 = 1;
+  while(num3 < count && num3 < 30){ topBits += ((arr[num3]===0 && num3!==25) ? '0' : '1'); num3++; }
+  arr[1] = toInt2(reverseStr(topBits));
+  arr[0] = toInt2(reverseStr(sub(topBits, 1, 25)));
+  arr[25] = getChecksum(id, arr);
+  let packed = '';
+  for(let i=0;i<count;i++) if(arr[i] !== 0) packed += padLeft(toNotationByKey(arr[i], keySet), saveLen[i], keySet[0] || '0');
+  const parts = [];
+  const chunkCount = Math.ceil(packed.length / 127);
+  for(let j=0;j<chunkCount;j++) parts.push(sub(packed, j*127, (j+1)*127));
+  return { code1: parts[0] || '', code2: parts[1] || '', code3: parts.slice(2).join('') || '' };
+}
+
+function buildServerJson(codeParts){
+  return {
+    ULbag1: ulbagData.ULbag1 || '0/0/0/0/0/0',
+    ULbag1Ch: ulbagData.ULbag1Ch || '0/0/0/0/0/0',
+    ULbag2: ulbagData.ULbag2 || '0/0/0/0/0/0',
+    ULbag2Ch: ulbagData.ULbag2Ch || '0/0/0/0/0/0',
+    ULbag3: ulbagData.ULbag3 || '0/0/0/0/0/0',
+    ULbag3Ch: ulbagData.ULbag3Ch || '0/0/0/0/0/0',
+    ULbag4: ulbagData.ULbag4 || '0/0/0/0/0/0',
+    ULbag4Ch: ulbagData.ULbag4Ch || '0/0/0/0/0/0',
+    ULbag5: ulbagData.ULbag5 || '0/0/0/0/0/0',
+    ULbag5Ch: ulbagData.ULbag5Ch || '0/0/0/0/0/0',
+    Stats: `${$('jsonStr').value || '@@@'}/${$('jsonAgi').value || '@@@'}/${$('jsonInt').value || '@@@'}`,
+    Code1: codeParts.code1 || '@@@',
+    Code2: codeParts.code2 || '@@@',
+    Code3: codeParts.code3 || '@@@'
+  };
+}
+
+function loadAll(){
+  const parsed = parsePreloadText($('rawPreload').value);
+  const fullCode = applyPreload(parsed);
+  const id = ($('playerId').value || '').trim() || parsed.id || '';
+  if(!id) throw new Error('닉네임(ID)이 필요함');
+  $('playerId').value = id;
+  const decoded = decodeClassic(fullCode, id);
+  reflectDecoded(decoded);
+  $('codeBox').textContent = JSON.stringify({
+    checksumMatched: decoded.checksumMatched,
+    fullCodeLength: fullCode.length,
+    parsedId: parsed.id,
+    parsedStats: { Str: parsed.str, Agi: parsed.agi, Int: parsed.int }
+  }, null, 2);
+  $('jsonBox').textContent = JSON.stringify(buildServerJson({code1:parsed.code1,code2:parsed.code2,code3:parsed.code3}), null, 2);
+  setStatus(`불러오기 완료 / 닉네임: ${id}`);
+}
+
+function generateAll(){
+  if(!lastDecoded) throw new Error('먼저 불러오기를 실행해줘.');
+  syncCodeStats();
+  const id = $('playerId').value.trim();
+  if(!id) throw new Error('닉네임(ID)이 필요함');
+  const named = applyUiToNamed({...lastDecoded.named});
+  const codeParts = encodeClassic(named, id);
+  $('codeBox').textContent = JSON.stringify(codeParts, null, 2);
+  $('jsonBox').textContent = JSON.stringify(buildServerJson(codeParts), null, 2);
+  setStatus(`결과 생성 완료 / 닉네임: ${id}`);
+}
+
+$('loadBtn').addEventListener('click', () => {
+  try{ loadAll(); }catch(e){ setStatus('불러오기 실패'); $('codeBox').textContent = `불러오기 실패: ${e.message}`; }
+});
+$('generateBtn').addEventListener('click', () => {
+  try{ generateAll(); }catch(e){ setStatus('결과 생성 실패'); $('codeBox').textContent = `결과 생성 실패: ${e.message}`; }
+});
+$('sampleBtn').addEventListener('click', () => { $('rawPreload').value = SAMPLE; });
+$('clearBtn').addEventListener('click', () => {
+  $('rawPreload').value=''; $('playerId').value=''; setStatus('아직 불러오지 않음');
+  ['beforeStr','beforeAgi','beforeInt','jsonStr','jsonAgi','jsonInt','codeStr','codeAgi','codeInt','heroSS'].forEach(id => $(id).value='');
+  ['swapStr','swapAgi','swapInt'].forEach(id => $(id).value='');
+  ['item1','item2','item3','item4','item5','item6','charNo'].forEach(id => $(id).value='0');
+  $('codeBox').textContent='아직 생성하지 않음'; $('jsonBox').textContent='아직 생성하지 않음';
+  originalStats = {Str:'',Agi:'',Int:''}; lastDecoded = null;
+});
+['jsonStr','jsonAgi','jsonInt'].forEach(id => $(id).addEventListener('input', syncCodeStats));
+['swapStr','swapAgi','swapInt'].forEach(id => $(id).addEventListener('change', applySwap));
+loadMasterJson();
 </script>
-
 </body>
 </html>
