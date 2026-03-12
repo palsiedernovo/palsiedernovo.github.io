@@ -67,7 +67,7 @@
       <div class="card">
         <h2>3. 변경 필드</h2>
         <div class="grid-2">
-          <div><label for="f57">캐릭터 번호</label><input id="f57" type="number" /></div>
+          <div><label for="f57">캐릭터 번호</label><select id="f57"></select></div>
           <div><label for="f162">HeroSS</label><input id="f162" type="number" /></div>
         </div>
         <div class="grid-3">
@@ -100,9 +100,19 @@
           </div>
         </div>
         <div class="grid-3">
-          <div><label for="f42">힘</label><input id="f42" type="number" /></div>
-          <div><label for="f47">민</label><input id="f47" type="number" /></div>
-          <div><label for="f52">지</label><input id="f52" type="number" /></div>
+          <div><label for="f42">JSON 힘</label><input id="f42" type="number" /></div>
+          <div><label for="f47">JSON 민</label><input id="f47" type="number" /></div>
+          <div><label for="f52">JSON 지</label><input id="f52" type="number" /></div>
+        </div>
+        <div class="grid-3">
+          <div><label for="beforeStr">변경전 힘</label><input id="beforeStr" type="number" readonly /></div>
+          <div><label for="beforeAgi">변경전 민</label><input id="beforeAgi" type="number" readonly /></div>
+          <div><label for="beforeInt">변경전 지</label><input id="beforeInt" type="number" readonly /></div>
+        </div>
+        <div class="grid-3">
+          <div><label for="codeStr">코드용 힘</label><input id="codeStr" type="number" readonly /></div>
+          <div><label for="codeAgi">코드용 민</label><input id="codeAgi" type="number" readonly /></div>
+          <div><label for="codeInt">코드용 지</label><input id="codeInt" type="number" readonly /></div>
         </div>
       </div>
     </div>
@@ -173,25 +183,43 @@ call Preload( "Agi: 250911" )
 
 call Preload( "Int: 255271" )`;
     let ITEM_OPTIONS = [];
+    let CHARACTER_OPTIONS = [];
 
 async function loadItemOptions(){
   try{
     const res = await fetch('./items.json');
     const json = await res.json();
 
-    // 지원 형식:
-    // 1) {"712":"아이템명", ...}
-    // 2) [{"id":712,"name":"아이템명"}, ...]
+    if (json && Array.isArray(json.DataDescriptions)) {
+      const itemDesc = json.DataDescriptions.find(d => Array.isArray(d.Index) && d.Index.includes(28));
+      const charDesc = json.DataDescriptions.find(d => Array.isArray(d.Index) && d.Index.includes(57));
 
-    if(Array.isArray(json)){
-      ITEM_OPTIONS = json.map(it => ({ value: it.id, label: it.name }));
-    }else{
-      ITEM_OPTIONS = Object.entries(json).map(([k,v])=>({ value:Number(k), label:v }));
+      ITEM_OPTIONS = (itemDesc?.Datas || []).map(it => ({
+        value: Number(it.Index),
+        label: String(it.Tip || `아이템 ID ${it.Index}`)
+      }));
+      ITEM_OPTIONS.unshift({ value: 0, label: '(없음)' });
+
+      CHARACTER_OPTIONS = (charDesc?.Datas || []).map(it => ({
+        value: Number(it.Index),
+        label: String(it.Tip || `캐릭터 ${it.Index}`)
+      }));
+      CHARACTER_OPTIONS.unshift({ value: 0, label: '(선택 안 함)' });
+      return;
     }
 
+    if(Array.isArray(json)){
+      ITEM_OPTIONS = json.map(it => ({ value: Number(it.id ?? it.Index), label: String(it.name ?? it.Tip ?? `아이템 ID ${it.id ?? it.Index}`) }));
+      CHARACTER_OPTIONS = [{ value: 0, label: '(선택 안 함)' }];
+      return;
+    }
+
+    ITEM_OPTIONS = Object.entries(json || {}).map(([k,v])=>({ value:Number(k), label:String(v) }));
+    CHARACTER_OPTIONS = [{ value: 0, label: '(선택 안 함)' }];
   }catch(e){
     console.error('아이템 JSON 로드 실패', e);
     ITEM_OPTIONS = [{ value:0, label:'(아이템 JSON 로드 실패)' }];
+    CHARACTER_OPTIONS = [{ value:0, label:'(캐릭터 JSON 로드 실패)' }];
   }
 }
 
@@ -224,15 +252,20 @@ async function loadItemOptions(){
         if (!el) return;
         el.innerHTML = ITEM_OPTIONS.map(opt => `<option value="${opt.value}">${escapeHtml(opt.label)}</option>`).join('');
       });
+
+      const charEl = getEl('f57');
+      if (charEl) {
+        charEl.innerHTML = CHARACTER_OPTIONS.map(opt => `<option value="${opt.value}">${escapeHtml(opt.label)}</option>`).join('');
+      }
     }
-    function ensureSelectHasValue(selectId, value) {
+    function ensureSelectHasValue(selectId, value, type = 'item') {
       const el = getEl(selectId);
       if (!el) return;
       const exists = Array.from(el.options).some(opt => String(opt.value) === String(value));
       if (!exists) {
         const opt = document.createElement('option');
         opt.value = String(value);
-        opt.textContent = `아이템 ID ${value}`;
+        opt.textContent = type === 'character' ? `캐릭터 ID ${value}` : `아이템 ID ${value}`;
         el.insertBefore(opt, el.firstChild);
       }
     }
@@ -240,6 +273,14 @@ async function loadItemOptions(){
       const num = Number(value || 0);
       if (!Number.isFinite(num)) return 0;
       return Math.min(num, STAT_CODE_CAP);
+    }
+    function syncStatPreview() {
+      const jsonStr = getEl('f42')?.value || '';
+      const jsonAgi = getEl('f47')?.value || '';
+      const jsonInt = getEl('f52')?.value || '';
+      if (getEl('codeStr')) getEl('codeStr').value = String(capStatForCode(jsonStr));
+      if (getEl('codeAgi')) getEl('codeAgi').value = String(capStatForCode(jsonAgi));
+      if (getEl('codeInt')) getEl('codeInt').value = String(capStatForCode(jsonInt));
     }
     function reverseStr(value) { return String(value).split('').reverse().join(''); }
     function substringLikeJass(value, start, end) {
@@ -374,11 +415,19 @@ async function loadItemOptions(){
         const el = getEl(fieldId);
         if (el) el.value = String(data[idx] ?? 0);
       });
-      if (getEl('f42')) getEl('f42').value = String(originalStats.Str || data[41] || 0);
-      if (getEl('f47')) getEl('f47').value = String(originalStats.Agi || data[46] || 0);
-      if (getEl('f52')) getEl('f52').value = String(originalStats.Int || data[51] || 0);
+      const beforeStr = String(originalStats.Str || data[41] || 0);
+      const beforeAgi = String(originalStats.Agi || data[46] || 0);
+      const beforeInt = String(originalStats.Int || data[51] || 0);
+      if (getEl('beforeStr')) getEl('beforeStr').value = beforeStr;
+      if (getEl('beforeAgi')) getEl('beforeAgi').value = beforeAgi;
+      if (getEl('beforeInt')) getEl('beforeInt').value = beforeInt;
+      if (getEl('f42')) getEl('f42').value = beforeStr;
+      if (getEl('f47')) getEl('f47').value = beforeAgi;
+      if (getEl('f52')) getEl('f52').value = beforeInt;
+      ensureSelectHasValue('f57', data[56] ?? 0, 'character');
       if (getEl('f57')) getEl('f57').value = String(data[56] ?? 0);
       if (getEl('f162')) getEl('f162').value = String(data[161] ?? 0);
+      syncStatPreview();
     }
     function applyQuickFieldsToNamedData(namedData) {
       const names = DEFAULT_PRESET.udg_saveDataName;
@@ -443,16 +492,20 @@ async function loadItemOptions(){
     }
     function applyStatRemap(remap) {
       const fields = { 힘:getEl('f42'), 민:getEl('f47'), 지:getEl('f52') };
-      const original = { 힘:String(fields.힘?.value || ''), 민:String(fields.민?.value || ''), 지:String(fields.지?.value || '') };
-      const next = { ...original };
-      Object.keys(remap).forEach(from => {
-        const to = remap[from];
-        if (!to || !fields[to]) return;
+      const original = {
+        힘: String(fields.힘?.value || ''),
+        민: String(fields.민?.value || ''),
+        지: String(fields.지?.value || '')
+      };
+      const next = { 힘: original.힘, 민: original.민, 지: original.지 };
+      Object.entries(remap).forEach(([from, to]) => {
+        if (!to || !Object.prototype.hasOwnProperty.call(next, to)) return;
         next[to] = original[from];
       });
       if (fields.힘) fields.힘.value = next.힘;
       if (fields.민) fields.민.value = next.민;
       if (fields.지) fields.지.value = next.지;
+      syncStatPreview();
     }
     function getStatRemapFromDropdowns() {
       return {
@@ -499,7 +552,22 @@ async function loadItemOptions(){
           code1: code1El?.value || '',
           code2: code2El?.value || '',
           code3: code3El?.value || '',
-          checksumMatched: decoded.checksumMatched
+          checksumMatched: decoded.checksumMatched,
+          beforeStats: {
+            Str: getEl('beforeStr')?.value || '',
+            Agi: getEl('beforeAgi')?.value || '',
+            Int: getEl('beforeInt')?.value || ''
+          },
+          codeStats: {
+            Str: getEl('codeStr')?.value || '',
+            Agi: getEl('codeAgi')?.value || '',
+            Int: getEl('codeInt')?.value || ''
+          },
+          jsonStats: {
+            Str: getEl('f42')?.value || '',
+            Agi: getEl('f47')?.value || '',
+            Int: getEl('f52')?.value || ''
+          }
         }, null, 2);
       } catch (err) {
         if (resultCodeBoxEl) resultCodeBoxEl.textContent = `디코드 실패: ${err.message}`;
@@ -508,11 +576,29 @@ async function loadItemOptions(){
     getEl('applyStatSwapBtn')?.addEventListener('click', () => {
       const remap = getStatRemapFromDropdowns();
       applyStatRemap(remap);
-      if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({ statRemap: remap }, null, 2);
+      if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({
+        statRemap: remap,
+        beforeStats: {
+          Str: getEl('beforeStr')?.value || '',
+          Agi: getEl('beforeAgi')?.value || '',
+          Int: getEl('beforeInt')?.value || ''
+        },
+        codeStats: {
+          Str: getEl('codeStr')?.value || '',
+          Agi: getEl('codeAgi')?.value || '',
+          Int: getEl('codeInt')?.value || ''
+        },
+        jsonStats: {
+          Str: getEl('f42')?.value || '',
+          Agi: getEl('f47')?.value || '',
+          Int: getEl('f52')?.value || ''
+        }
+      }, null, 2);
     });
     getEl('encodeBtn')?.addEventListener('click', () => {
       try {
         if (!lastDecoded) throw new Error('먼저 디코드를 실행해줘.');
+        syncStatPreview();
         const namedData = applyQuickFieldsToNamedData({ ...(lastDecoded.named || {}) });
         const encoded = encodeClassicFromNamed(namedData, DEFAULT_PRESET, '');
         if (code1El) code1El.value = encoded.code1;
@@ -522,13 +608,29 @@ async function loadItemOptions(){
         if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({
           code1: encoded.code1,
           code2: encoded.code2,
-          code3: encoded.code3
+          code3: encoded.code3,
+          beforeStats: {
+            Str: getEl('beforeStr')?.value || '',
+            Agi: getEl('beforeAgi')?.value || '',
+            Int: getEl('beforeInt')?.value || ''
+          },
+          codeStats: {
+            Str: getEl('codeStr')?.value || '',
+            Agi: getEl('codeAgi')?.value || '',
+            Int: getEl('codeInt')?.value || ''
+          },
+          jsonStats: {
+            Str: getEl('f42')?.value || '',
+            Agi: getEl('f47')?.value || '',
+            Int: getEl('f52')?.value || ''
+          }
         }, null, 2);
       } catch (err) {
         if (resultCodeBoxEl) resultCodeBoxEl.textContent = `인코드 실패: ${err.message}`;
       }
     });
     getEl('buildJsonBtn')?.addEventListener('click', () => {
+      syncStatPreview();
       if (serverJsonBoxEl) serverJsonBoxEl.textContent = JSON.stringify(buildServerJson(), null, 2);
     });
     getEl('clearAllBtn')?.addEventListener('click', () => {
@@ -554,6 +656,9 @@ async function loadItemOptions(){
     code1El?.addEventListener('input', mergeCodes);
     code2El?.addEventListener('input', mergeCodes);
     code3El?.addEventListener('input', mergeCodes);
+    getEl('f42')?.addEventListener('input', syncStatPreview);
+    getEl('f47')?.addEventListener('input', syncStatPreview);
+    getEl('f52')?.addEventListener('input', syncStatPreview);
 
     loadItemOptions().then(()=>{ populateItemSelects(); });
   </script>
