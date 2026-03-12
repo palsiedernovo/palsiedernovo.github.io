@@ -3,362 +3,559 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preload → JSON 변환기</title>
+  <title>세이브 코드 작업 도구</title>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, "Malgun Gothic", sans-serif;
-      background: #f5f7fb;
-      color: #222;
-    }
-    .wrap {
-      max-width: 1100px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      margin: 0 0 10px;
-      font-size: 30px;
-    }
-    .desc {
-      margin: 0;
-      color: #555;
-      line-height: 1.6;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 900px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    textarea, input, select {
-      width: 100%;
-      border: 1px solid #d0d7e2;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 14px;
-      outline: none;
-      background: #fff;
-    }
-    textarea {
-      min-height: 360px;
-      resize: vertical;
-      line-height: 1.5;
-      font-family: Consolas, monospace;
-    }
-    input, select {
-      margin-bottom: 14px;
-    }
-    .btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 12px 18px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .primary {
-      background: #2563eb;
-      color: white;
-    }
-    .secondary {
-      background: #e5e7eb;
-      color: #222;
-    }
-    pre {
-      margin: 0;
-      background: #111827;
-      color: #e5e7eb;
-      border-radius: 12px;
-      padding: 18px;
-      overflow: auto;
-      min-height: 360px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.6;
-      font-family: Consolas, monospace;
-      font-size: 14px;
-    }
-    .hint {
-      margin-top: 8px;
-      color: #666;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .stat-map {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 6px;
-    }
-    @media (max-width: 700px) {
-      .stat-map {
-        grid-template-columns: 1fr;
-      }
-    }
+    body { margin: 0; font-family: Arial, "Malgun Gothic", sans-serif; background: #f5f7fb; color: #222; }
+    .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px 40px; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 16px; }
+    h1, h2 { margin: 0 0 12px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; }
+    .desc { color: #555; line-height: 1.6; }
+    .warn { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; padding: 12px 14px; border-radius: 10px; line-height: 1.6; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+    label { display: block; font-weight: 700; margin-bottom: 6px; }
+    input, textarea, select, button { width: 100%; font-size: 14px; border-radius: 10px; }
+    input, textarea, select { border: 1px solid #d0d7e2; padding: 10px 12px; background: #fff; outline: none; margin-bottom: 12px; }
+    textarea { min-height: 180px; resize: vertical; line-height: 1.5; font-family: Consolas, monospace; }
+    button { border: none; padding: 11px 16px; font-weight: 700; cursor: pointer; background: #2563eb; color: #fff; }
+    .secondary { background: #e5e7eb; color: #222; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .btn-row button { width: auto; min-width: 130px; }
+    pre { margin: 0; background: #111827; color: #e5e7eb; border-radius: 12px; padding: 16px; overflow: auto; min-height: 140px; white-space: pre-wrap; word-break: break-word; line-height: 1.55; font-family: Consolas, monospace; font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="card">
+      <h1>세이브 코드 작업 도구</h1>
+      <p class="desc">Preload 붙여넣기 → 코드 디코드 → 스탯/아이템/캐릭터 수정 → 인코드 → 서버 JSON 생성.</p>
+      <div class="warn">힘/민/지는 코드 인코딩용으로만 최대 728999까지 사용한다. 서버 JSON의 Stats는 실제 입력값 그대로 유지한다.</div>
+    </div>
 
     <div class="card">
-      <div>
-        <label for="code1">Code1</label>
-        <input id="code1" type="text" placeholder="Code1 입력" />
-      </div>
-
-      <div>
-        <label for="code2">Code2</label>
-        <input id="code2" type="text" placeholder="Code2 입력" />
-      </div>
-
-      <div>
-        <label for="code3">Code3</label>
-        <input id="code3" type="text" placeholder="비워두면 JSON에서 제외" />
-      </div>
-
-      <div>
-        <label for="stats">Stats</label>
-        <input id="stats" type="text" placeholder="자동 계산되거나 직접 입력 가능" />
-      </div>
-
-      <div>
-        <label>스탯 이동 설정</label>
-        <div class="stat-map">
-          <div>
-            <label for="mapStr">힘 →</label>
-            <select id="mapStr">
-              <option value="Str" selected>힘</option>
-              <option value="Agi">민</option>
-              <option value="Int">지</option>
-            </select>
-          </div>
-          <div>
-            <label for="mapAgi">민 →</label>
-            <select id="mapAgi">
-              <option value="Str">힘</option>
-              <option value="Agi" selected>민</option>
-              <option value="Int">지</option>
-            </select>
-          </div>
-          <div>
-            <label for="mapInt">지 →</label>
-            <select id="mapInt">
-              <option value="Str">힘</option>
-              <option value="Agi">민</option>
-              <option value="Int" selected>지</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="hint">
-        Code3가 비어있으면 JSON 결과에서 Code3 항목은 출력되지 않습니다.<br />
-        <code>Str / Agi / Int</code> 값이 있으면 Stats가 자동으로 조합됩니다.<br />
-        <code>ID / Gold / Lumber / Char / Lv / Exp</code> 같은 항목은 자동으로 무시됩니다.
+      <h2>1. 원본 Preload 입력</h2>
+      <label for="rawPreload">메모장 내용</label>
+      <textarea id="rawPreload" placeholder="call Preload(...) 전체를 그대로 붙여넣기"></textarea>
+      <div class="btn-row">
+        <button id="parsePreloadBtn">Preload 파싱</button>
+        <button id="samplePreloadBtn" class="secondary">샘플 넣기</button>
+        <button id="clearAllBtn" class="secondary">전체 초기화</button>
       </div>
     </div>
 
-    <div class="grid">
+    <div class="grid-2">
       <div class="card">
-        <label for="input">Preload 입력</label>
-        <textarea id="input"></textarea>
-        <div class="btns">
-          <button class="primary" id="copyBtn">JSON 복사</button>
-          <button class="secondary" id="sampleBtn">샘플 넣기</button>
-          <button class="secondary" id="clearBtn">초기화</button>
+        <h2>2. 코드</h2>
+        <label for="code1">Code1</label>
+        <textarea id="code1" placeholder="Code1"></textarea>
+        <label for="code2">Code2</label>
+        <textarea id="code2" placeholder="Code2"></textarea>
+        <label for="code3">Code3</label>
+        <textarea id="code3" placeholder="Code3"></textarea>
+        <textarea id="fullCode" style="display:none"></textarea>
+        <div class="btn-row">
+          <button id="decodeBtn">코드 디코드</button>
+          <button id="encodeBtn" class="secondary">현재 값으로 인코드</button>
         </div>
       </div>
 
       <div class="card">
-        <label for="output">JSON 결과</label>
-        <pre id="output"></pre>
+        <h2>3. 변경 필드</h2>
+        <div class="grid-2">
+          <div><label for="f57">캐릭터 번호</label><input id="f57" type="number" /></div>
+          <div><label for="f162">HeroSS</label><input id="f162" type="number" /></div>
+        </div>
+        <div class="grid-3">
+          <div>
+            <label for="statFromStr">힘 →</label>
+            <select id="statFromStr">
+              <option value="">변경 없음</option>
+              <option value="힘">힘</option>
+              <option value="민">민</option>
+              <option value="지">지</option>
+            </select>
+          </div>
+          <div>
+            <label for="statFromAgi">민 →</label>
+            <select id="statFromAgi">
+              <option value="">변경 없음</option>
+              <option value="힘">힘</option>
+              <option value="민">민</option>
+              <option value="지">지</option>
+            </select>
+          </div>
+          <div>
+            <label for="statFromInt">지 →</label>
+            <select id="statFromInt">
+              <option value="">변경 없음</option>
+              <option value="힘">힘</option>
+              <option value="민">민</option>
+              <option value="지">지</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div><label for="f42">힘</label><input id="f42" type="number" /></div>
+          <div><label for="f47">민</label><input id="f47" type="number" /></div>
+          <div><label for="f52">지</label><input id="f52" type="number" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. 장착 아이템 6부위</h2>
+      <div class="grid-3">
+        <div><label for="f28">아이템 1</label><select id="f28"></select></div>
+        <div><label for="f33">아이템 2</label><select id="f33"></select></div>
+        <div><label for="f38">아이템 3</label><select id="f38"></select></div>
+        <div><label for="f43">아이템 4</label><select id="f43"></select></div>
+        <div><label for="f48">아이템 5</label><select id="f48"></select></div>
+        <div><label for="f53">아이템 6</label><select id="f53"></select></div>
+      </div>
+      <div class="btn-row">
+        <button id="applyStatSwapBtn">스텟 변경 적용</button>
+        <button id="buildJsonBtn" class="secondary">서버 JSON 생성</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>5. 결과 코드</h2>
+        <pre id="resultCodeBox">아직 생성하지 않음</pre>
+      </div>
+      <div class="card">
+        <h2>6. 서버 입력용 JSON</h2>
+        <pre id="serverJsonBox">아직 생성하지 않음</pre>
       </div>
     </div>
   </div>
 
   <script>
-    const input = document.getElementById('input');
-    const output = document.getElementById('output');
-    const copyBtn = document.getElementById('copyBtn');
-    const sampleBtn = document.getElementById('sampleBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const code1 = document.getElementById('code1');
-    const code2 = document.getElementById('code2');
-    const code3 = document.getElementById('code3');
-    const stats = document.getElementById('stats');
-    const mapStr = document.getElementById('mapStr');
-    const mapAgi = document.getElementById('mapAgi');
-    const mapInt = document.getElementById('mapInt');
+    const DEFAULT_PRESET = {"udg_MapName":"NarutoRPG","udg_keySet":"a9rpY2}g5f,ZRo6]%:Wl0Vs37ti4nz=kLBX.q{;u^1A!OFDv&Jhd+mwc('NEU$QC~KMj[T)/_GI@#H8Pey-S?b<>*x","udg_saveDataVersion":3,"udg_saveData":[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,2,1,2,2,4,2,1,2,2,5,2,1,2,2,3,2,1,2,2,3,2,1,2,2,3,2,1,2,2,2,5,3,5,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1,2,1,2,1,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,1,2,2,2,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,3],"udg_saveDataName":["코드 길이 체크 값","코드 길이 값 1","코드 길이 값 2","코드 길이 값 3","코드 길이 값 4","코드 길이 값 5","코드 길이 값 6","코드 길이 값 7","코드 길이 값 8","코드 길이 값 9","코드 길이 값 10","코드 길이 값 11","코드 길이 값 12","코드 길이 값 13","코드 길이 값 14","코드 길이 값 15","코드 길이 값 16","코드 길이 값 17","코드 길이 값 18","코드 길이 값 19","코드 길이 값 20","코드 길이 값 21","코드 길이 값 22","코드 길이 값 23","코드 길이 값 24","암호화 값","금","캐릭터 아이템 1","캐릭터 스택 1","배낭 아이템 1","배낭 스택 1","나무","캐릭터 아이템 2","캐릭터 스택 2","배낭 아이템 2","배낭 스택 2","경험치","캐릭터 아이템 3","캐릭터 스택 3","배낭 아이템 3","배낭 스택 3","힘","캐릭터 아이템 4","캐릭터 스택 4","배낭 아이템 4","배낭 스택 4","민첩성","캐릭터 아이템 5","캐릭터 스택 5","배낭 아이템 5","배낭 스택 5","지능","캐릭터 아이템 6","캐릭터 스택 6","배낭 아이템 6","배낭 스택 6","캐릭터 번호","세이브 횟수","HeroLv","HeroSExp1","HeroSExp2","HeroSExp3","HeroSExp4","HeroSLv1","HeroSLv2","HeroSLv3","HeroSLv4","HeroItemup1","HeroItemup2","HeroItemup3","HeroItemup4","HeroItemup5","BagItem7","BagCharge7","BagItem8","BagCharge8","BagItem9","BagCharge9","BagItem10","BagCharge10","BagItem11","BagCharge11","BagItem12","BagCharge12","Story","BagItem13","BagCharge13","BagItem14","BagCharge14","BagItem15","BagCharge15","BagItem16","BagCharge16","BagItem17","BagCharge17","BagItem18","BagCharge18","BagItem19","BagCharge19","BagItem20","BagCharge20","BagItem21","BagCharge21","BagItem22","BagCharge22","BagItem23","BagCharge23","BagItem24","BagCharge24","BagItem25","BagCharge25","BagItem26","BagCharge26","BagItem27","BagCharge27","BagItem28","BagCharge28","BagItem29","BagCharge29","BagItem30","BagCharge30","HeroRevive","HeroBag1","HeroBag2","HeroBag3","HeroBag4","HeroBag5","HeroBag6","HeroBag7","HeroBag8","HeroBag9","HeroBag10","HeroBag11","HeroBag12","HeroBagCharge1","HeroBagCharge2","HeroBagCharge3","HeroBagCharge4","HeroBagCharge5","HeroBagCharge6","HeroBagCharge7","HeroBagCharge8","HeroBagCharge9","HeroBagCharge10","HeroBagCharge11","HeroBagCharge12","HeroPoint1","HeroPoint2","HeroBag13","HeroBag14","HeroBag15","HeroBag16","HeroBag17","HeroBag18","HeroBagCharge13","HeroBagCharge14","HeroBagCharge15","HeroBagCharge16","HeroBagCharge17","HeroBagCharge18","HeroSK1","HeroSS","HeroBag19","HeroBag20","HeroBag21","HeroBag22","HeroBag23","HeroBag24","HeroBagCharge19","HeroBagCharge20","HeroBagCharge21","HeroBagCharge22","HeroBagCharge23","HeroBagCharge24","HeroSK2","HeroBag25","HeroBag26","HeroBag27","HeroBag28","HeroBag29","HeroBag30","HeroBagCharge25","HeroBagCharge26","HeroBagCharge27","HeroBagCharge28","HeroBagCharge29","HeroBagCharge30","HeroBag31","HeroBag32","HeroBag33","HeroBag34","HeroBag35","HeroBag36","HeroBagCharge31","HeroBagCharge32","HeroBagCharge33","HeroBagCharge34","HeroBagCharge35","HeroBagCharge36","영혼석"]};
+    const SAMPLE_PRELOAD = `call Preload( "Code1: aaa9{]#80v]d(O]6<g&S%LL6ig6.nkg*-DOaa2p-aaUv}a*&eg#92!,g9l8egNx2_t@8g!x-iygqx=>yg[xkDkgbxa+aaa;nacdg3iprg3;F8,J!Da,B-R(,O,O,m,m " )
 
-    const sampleText = `call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
+call Preload( "Code2: p%pipZp,p-2NgZ}sg@CEgI~E5g}3g9axg]gRa92TLA2)a}}taO}f5*2[sog2x}xxgOxg;xg/xggxpR'ha*jgax9r2e}~28Yh2>r:]ZYdlROkp2S2eg%Yh)xYe}j}2g6 " )
 
-call Preload( "ULbag2:0/0/0/0/0/0,ULbag2Ch:0/0/0/0/0/0" )
+call Preload( "Code3: g%gox " )
 
-call Preload( "ULbag3:0/0/0/0/0/0,ULbag3Ch:0/0/0/0/0/0" )
+call Preload( "ULbag1:0/0/0/0/0/0,ULbag1Ch:0/0/0/0/0/0" )
+
+call Preload( "ULbag2:650/647/646/709/477/0,ULbag2Ch:3191/3164/0/0/1617/0" )
+
+call Preload( "ULbag3:558/643/678/679/646/0,ULbag3Ch:0/0/1551/1483/0/0" )
 
 call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
 
-call Preload( "ULbag5:1/0/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
+call Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
 
-call Preload( "Str: 1000001" )
-call Preload( "Agi: 500001" )
-call Preload( "Int: 1030001" )`;
+call Preload( "----------------- Data Stats -----------------" )
 
-    function defaultData() {
-      return {
-        ULbag1: '0/0/0/0/0/0',
-        ULbag1Ch: '0/0/0/0/0/0',
-        ULbag2: '0/0/0/0/0/0',
-        ULbag2Ch: '0/0/0/0/0/0',
-        ULbag3: '0/0/0/0/0/0',
-        ULbag3Ch: '0/0/0/0/0/0',
-        ULbag4: '0/0/0/0/0/0',
-        ULbag4Ch: '0/0/0/0/0/0',
-        ULbag5: '0/0/0/0/0/0',
-        ULbag5Ch: '0/0/0/0/0/0'
-      };
+call Preload( "ID: dlwnsah1010" )
+
+call Preload( "Gold: 717200" )
+
+call Preload( "Lumber: 890000" )
+
+call Preload( "Char: |cffffd700육도 선인|r" )
+
+call Preload( "Lv: 5001" )
+
+call Preload( "Exp: 380747328" )
+
+call Preload( "Str: 666621" )
+
+call Preload( "Agi: 250911" )
+
+call Preload( "Int: 255271" )`;
+    let ITEM_OPTIONS = [];
+
+async function loadItemOptions(){
+  try{
+    const res = await fetch('./items.json');
+    const json = await res.json();
+
+    // 지원 형식:
+    // 1) {"712":"아이템명", ...}
+    // 2) [{"id":712,"name":"아이템명"}, ...]
+
+    if(Array.isArray(json)){
+      ITEM_OPTIONS = json.map(it => ({ value: it.id, label: it.name }));
+    }else{
+      ITEM_OPTIONS = Object.entries(json).map(([k,v])=>({ value:Number(k), label:v }));
     }
 
-    function parsePreload(text) {
-      const result = defaultData();
-      const statValues = { Str: '', Agi: '', Int: '' };
-      const normalized = text.replace(/[\u200B-\u200D\uFEFF]/g, ' ');
-      const regex = /call\s+Preload\s*\(\s*"([^"]*)"\s*\)/gi;
-      const matches = [...normalized.matchAll(regex)];
+  }catch(e){
+    console.error('아이템 JSON 로드 실패', e);
+    ITEM_OPTIONS = [{ value:0, label:'(아이템 JSON 로드 실패)' }];
+  }
+}
 
-      matches.forEach(match => {
-        const content = match[1];
-        const pairs = content.split(',');
 
-        pairs.forEach(pair => {
-          const idx = pair.indexOf(':');
-          if (idx === -1) return;
+    const getEl = id => document.getElementById(id);
+    const rawPreloadEl = getEl('rawPreload');
+    const code1El = getEl('code1');
+    const code2El = getEl('code2');
+    const code3El = getEl('code3');
+    const fullCodeEl = getEl('fullCode');
+    const resultCodeBoxEl = getEl('resultCodeBox');
+    const serverJsonBoxEl = getEl('serverJsonBox');
+    let lastDecoded = null;
+    let originalStats = { Str: '', Agi: '', Int: '' };
+    let ulbagData = {
+      ULbag1:'0/0/0/0/0/0', ULbag1Ch:'0/0/0/0/0/0',
+      ULbag2:'0/0/0/0/0/0', ULbag2Ch:'0/0/0/0/0/0',
+      ULbag3:'0/0/0/0/0/0', ULbag3Ch:'0/0/0/0/0/0',
+      ULbag4:'0/0/0/0/0/0', ULbag4Ch:'0/0/0/0/0/0',
+      ULbag5:'0/0/0/0/0/0', ULbag5Ch:'0/0/0/0/0/0'
+    };
+    const STAT_CODE_CAP = 728999;
 
-          const key = pair.slice(0, idx).trim();
-          const value = pair.slice(idx + 1).trim();
-
-          if (!key) return;
-
-          if (key === 'Str' || key === 'Agi' || key === 'Int') {
-            statValues[key] = value;
-          } else if (/^ULbag[1-5](Ch)?$/.test(key)) {
-            result[key] = value;
-          }
-        });
+    function escapeHtml(value) {
+      return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function populateItemSelects() {
+      ['f28','f33','f38','f43','f48','f53'].forEach(id => {
+        const el = getEl(id);
+        if (!el) return;
+        el.innerHTML = ITEM_OPTIONS.map(opt => `<option value="${opt.value}">${escapeHtml(opt.label)}</option>`).join('');
       });
-
-      const remappedStats = {
-        Str: '',
-        Agi: '',
-        Int: ''
-      };
-
-      remappedStats[mapStr.value] = statValues.Str;
-      remappedStats[mapAgi.value] = statValues.Agi;
-      remappedStats[mapInt.value] = statValues.Int;
-
-      const selectedStats = [
-        remappedStats.Str,
-        remappedStats.Agi,
-        remappedStats.Int
-      ];
-
-      if (selectedStats.every(v => v !== '')) {
-        result.Stats = selectedStats.join('/');
-      } else {
-        const manualStats = stats.value.trim();
-        if (manualStats !== '') {
-          result.Stats = manualStats;
-        }
+    }
+    function ensureSelectHasValue(selectId, value) {
+      const el = getEl(selectId);
+      if (!el) return;
+      const exists = Array.from(el.options).some(opt => String(opt.value) === String(value));
+      if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = String(value);
+        opt.textContent = `아이템 ID ${value}`;
+        el.insertBefore(opt, el.firstChild);
       }
-
-      const code1Value = code1.value.trim();
-      const code2Value = code2.value.trim();
-      const code3Value = code3.value.trim();
-
-      if (code1Value !== '') {
-        result.Code1 = code1Value;
+    }
+    function capStatForCode(value) {
+      const num = Number(value || 0);
+      if (!Number.isFinite(num)) return 0;
+      return Math.min(num, STAT_CODE_CAP);
+    }
+    function reverseStr(value) { return String(value).split('').reverse().join(''); }
+    function substringLikeJass(value, start, end) {
+      const safe = String(value || '');
+      const s = Math.max(0, start);
+      const e = Math.max(s, Math.min(end, safe.length));
+      return safe.substring(s, e);
+    }
+    function cleanCodePart(value) {
+      return String(value || '').replace(/call\s+Preload\s*\(\s*"?Code[123]\s*:\s*/gi, '').replace(/"\s*\)\s*/g, '').replace(/[\r\n\t]/g, '').trim();
+    }
+    function mergeCodes() {
+      if (!fullCodeEl) return;
+      const c1 = cleanCodePart(code1El?.value);
+      const c2 = cleanCodePart(code2El?.value);
+      const c3 = cleanCodePart(code3El?.value);
+      fullCodeEl.value = `${c1}${c2}${c3}`.trim();
+    }
+    function toIntegerByKeySet(input, keySet) {
+      if (!input) return 0;
+      let num = 0;
+      const base = keySet.length;
+      for (const ch of String(input)) {
+        const idx = keySet.indexOf(ch);
+        num *= base;
+        num += idx === -1 ? base : idx;
       }
-
-      if (code2Value !== '') {
-        result.Code2 = code2Value;
+      return num;
+    }
+    function codeLength2(input, maxLength) { return String(input).padStart(maxLength, '0'); }
+    function toNotation2(input) { return Number(input).toString(2); }
+    function toNotationByKeySet(input, keySet) {
+      const base = keySet.length;
+      let num = Number(input);
+      if (!Number.isFinite(num) || num <= 0) return keySet[0] || '';
+      let out = '';
+      while (num > 0) {
+        const mod = num % base;
+        out = keySet[mod] + out;
+        num = Math.floor(num / base);
       }
-
-      if (code3Value !== '') {
-        result.Code3 = code3Value;
+      return out;
+    }
+    function codeLengthByKeySet(input, maxLength, keySet) { return String(input).padStart(maxLength, keySet[0] || '0'); }
+    function toInteger2(input) { return parseInt(String(input || '0'), 2) || 0; }
+    function dataOnBoolean(index) { return index >= 0 && index < 26; }
+    function getChecksumClassic(preset, id, data) {
+      const keyLen = String(preset.udg_keySet || '').length;
+      const saveDataVersion = Number(preset.udg_saveDataVersion || 0);
+      const mapName = preset.udg_MapName || '';
+      let result = 0 + (saveDataVersion % 1000);
+      for (const ch of String(mapName || '')) result += ch.charCodeAt(0);
+      for (const ch of String(id || '')) result += ch.charCodeAt(0);
+      const modBase = Math.pow(keyLen, 2);
+      for (let i = 0; i < data.length; i += 1) {
+        if (data[i] !== 0 && i !== 25) result += (data[i] % modBase) * (((i + 1) % 5) + 1);
       }
-
       return result;
     }
-
-    function render() {
-      const parsed = parsePreload(input.value);
-      output.textContent = JSON.stringify(parsed, null, 2);
+    function decodeClassic(fullCode, preset, idForChecksum) {
+      const keySet = preset.udg_keySet || '';
+      const saveDataLength = Array.isArray(preset.udg_saveData) ? preset.udg_saveData : [];
+      const saveDataName = Array.isArray(preset.udg_saveDataName) ? preset.udg_saveDataName : [];
+      const saveDataCount = saveDataLength.length;
+      if (!keySet || !saveDataCount) throw new Error('프리셋에 keySet 또는 saveData가 없음');
+      const text = String(fullCode || '').replace(/[\r\n\t ]/g, '');
+      const num = Math.ceil(saveDataCount / 30);
+      const headerRaw = substringLikeJass(text, 0, saveDataLength[0]);
+      const text2 = reverseStr(codeLength2(toNotation2(toIntegerByKeySet(headerRaw, keySet)), num));
+      let num2 = 0;
+      let text3 = '';
+      for (let i = 0; i < num; i += 1) {
+        if (text2[i] === '1') {
+          num2 += 5;
+          const blockRaw = substringLikeJass(text, num2, num2 + saveDataLength[i]);
+          text3 += reverseStr(codeLength2(toNotation2(toIntegerByKeySet(blockRaw, keySet)), 30));
+        } else {
+          text3 += ''.padStart(30, '0');
+        }
+      }
+      if (text3.length > saveDataCount) text3 = text3.substring(0, saveDataCount);
+      const array = new Array(saveDataCount).fill(0);
+      let cursor = 0;
+      for (let i = 0; i < text3.length; i += 1) {
+        if (text3[i] === '1') {
+          const raw = substringLikeJass(text, cursor, cursor + saveDataLength[i]);
+          array[i] = toIntegerByKeySet(raw, keySet);
+          cursor += saveDataLength[i];
+        }
+      }
+      const named = {};
+      for (let i = 0; i < saveDataCount; i += 1) named[saveDataName[i] || `field_${i}`] = array[i];
+      const checksum = getChecksumClassic(preset, idForChecksum, array);
+      return { fullCode: text, data: array, named, storedChecksum: array[25] ?? null, calculatedChecksum: checksum, checksumMatched: (array[25] ?? null) === checksum };
+    }
+    function encodeClassicFromNamed(namedData, preset, idForChecksum) {
+      const keySet = preset.udg_keySet || '';
+      const saveDataLength = Array.isArray(preset.udg_saveData) ? preset.udg_saveData : [];
+      const saveDataName = Array.isArray(preset.udg_saveDataName) ? preset.udg_saveDataName : [];
+      const saveDataCount = saveDataLength.length;
+      const array = new Array(saveDataCount).fill(0);
+      for (let i = 0; i < saveDataCount; i += 1) {
+        if (!dataOnBoolean(i)) {
+          const fieldName = saveDataName[i];
+          const rawValue = Number(namedData[fieldName] ?? 0);
+          const max = Math.pow(keySet.length, saveDataLength[i]);
+          array[i] = rawValue < max ? rawValue : Math.floor(max - 1);
+        }
+      }
+      let bitText = '';
+      for (let j = 0; j < saveDataCount; j += 1) bitText += ((array[j] === 0 && !dataOnBoolean(j)) ? '0' : '1');
+      const blockCount = Math.ceil(saveDataCount / 30);
+      for (let k = 0; k < blockCount; k += 1) array[k + 1] = toInteger2(reverseStr(substringLikeJass(bitText, k * 30, (k + 1) * 30)));
+      let topBits = '1';
+      let num3 = 1;
+      while (num3 < saveDataCount && num3 < 30) { topBits += ((array[num3] === 0 && num3 !== 25) ? '0' : '1'); num3 += 1; }
+      array[1] = toInteger2(reverseStr(topBits));
+      array[0] = toInteger2(reverseStr(substringLikeJass(topBits, 1, 25)));
+      array[25] = getChecksumClassic(preset, idForChecksum, array);
+      let packed = '';
+      for (let i = 0; i < saveDataCount; i += 1) if (array[i] !== 0) packed += codeLengthByKeySet(toNotationByKeySet(array[i], keySet), saveDataLength[i], keySet);
+      const parts = [];
+      const chunkCount = Math.ceil(packed.length / 127);
+      for (let j = 0; j < chunkCount; j += 1) parts.push(substringLikeJass(packed, j * 127, (j + 1) * 127));
+      return { data: array, code: packed, code1: parts[0] || '', code2: parts[1] || '', code3: parts.slice(2).join('') || '' };
+    }
+    function setQuickFieldsFromDecoded(decoded) {
+      const data = decoded.data || [];
+      const itemMap = { f28: 27, f33: 32, f38: 37, f43: 42, f48: 47, f53: 52 };
+      Object.entries(itemMap).forEach(([fieldId, idx]) => {
+        ensureSelectHasValue(fieldId, data[idx] ?? 0);
+        const el = getEl(fieldId);
+        if (el) el.value = String(data[idx] ?? 0);
+      });
+      if (getEl('f42')) getEl('f42').value = String(originalStats.Str || data[41] || 0);
+      if (getEl('f47')) getEl('f47').value = String(originalStats.Agi || data[46] || 0);
+      if (getEl('f52')) getEl('f52').value = String(originalStats.Int || data[51] || 0);
+      if (getEl('f57')) getEl('f57').value = String(data[56] ?? 0);
+      if (getEl('f162')) getEl('f162').value = String(data[161] ?? 0);
+    }
+    function applyQuickFieldsToNamedData(namedData) {
+      const names = DEFAULT_PRESET.udg_saveDataName;
+      if (names[27] && getEl('f28')) namedData[names[27]] = Number(getEl('f28').value || 0);
+      if (names[32] && getEl('f33')) namedData[names[32]] = Number(getEl('f33').value || 0);
+      if (names[37] && getEl('f38')) namedData[names[37]] = Number(getEl('f38').value || 0);
+      if (names[42] && getEl('f43')) namedData[names[42]] = Number(getEl('f43').value || 0);
+      if (names[47] && getEl('f48')) namedData[names[47]] = Number(getEl('f48').value || 0);
+      if (names[52] && getEl('f53')) namedData[names[52]] = Number(getEl('f53').value || 0);
+      if (names[41] && getEl('f42')) namedData[names[41]] = capStatForCode(getEl('f42').value || 0);
+      if (names[46] && getEl('f47')) namedData[names[46]] = capStatForCode(getEl('f47').value || 0);
+      if (names[51] && getEl('f52')) namedData[names[51]] = capStatForCode(getEl('f52').value || 0);
+      if (names[56] && getEl('f57')) namedData[names[56]] = Number(getEl('f57').value || 0);
+      if (names[161] && getEl('f162')) namedData[names[161]] = Number(getEl('f162').value || 0);
+      return namedData;
+    }
+    function parsePreloadText(raw) {
+      const text = String(raw || '');
+      const parsed = {
+        code1:'', code2:'', code3:'',
+        ULbag1:'0/0/0/0/0/0', ULbag1Ch:'0/0/0/0/0/0',
+        ULbag2:'0/0/0/0/0/0', ULbag2Ch:'0/0/0/0/0/0',
+        ULbag3:'0/0/0/0/0/0', ULbag3Ch:'0/0/0/0/0/0',
+        ULbag4:'0/0/0/0/0/0', ULbag4Ch:'0/0/0/0/0/0',
+        ULbag5:'0/0/0/0/0/0', ULbag5Ch:'0/0/0/0/0/0',
+        ID:'', Str:'', Agi:'', Int:''
+      };
+      const code1 = text.match(/Code1:\s*([^"\r\n]+)/i);
+      const code2 = text.match(/Code2:\s*([^"\r\n]+)/i);
+      const code3 = text.match(/Code3:\s*([^"\r\n]+)/i);
+      if (code1) parsed.code1 = code1[1].trim();
+      if (code2) parsed.code2 = code2[1].trim();
+      if (code3) parsed.code3 = code3[1].trim();
+      for (let i = 1; i <= 5; i += 1) {
+        const re = new RegExp(`ULbag${i}:([^,\"\\r\\n]+),ULbag${i}Ch:([^\"\\r\\n]+)`, 'i');
+        const m = text.match(re);
+        if (m) {
+          parsed[`ULbag${i}`] = m[1].trim();
+          parsed[`ULbag${i}Ch`] = m[2].trim();
+        }
+      }
+      ['ID','Str','Agi','Int'].forEach(key => {
+        const re = new RegExp(`${key}:\\s*([^\"\\r\\n]+)`, 'i');
+        const m = text.match(re);
+        if (m) parsed[key] = m[1].trim();
+      });
+      return parsed;
+    }
+    function applyParsedPreload(parsed) {
+      originalStats = { Str: parsed.Str || '', Agi: parsed.Agi || '', Int: parsed.Int || '' };
+      ulbagData = {
+        ULbag1: parsed.ULbag1 || '0/0/0/0/0/0', ULbag1Ch: parsed.ULbag1Ch || '0/0/0/0/0/0',
+        ULbag2: parsed.ULbag2 || '0/0/0/0/0/0', ULbag2Ch: parsed.ULbag2Ch || '0/0/0/0/0/0',
+        ULbag3: parsed.ULbag3 || '0/0/0/0/0/0', ULbag3Ch: parsed.ULbag3Ch || '0/0/0/0/0/0',
+        ULbag4: parsed.ULbag4 || '0/0/0/0/0/0', ULbag4Ch: parsed.ULbag4Ch || '0/0/0/0/0/0',
+        ULbag5: parsed.ULbag5 || '0/0/0/0/0/0', ULbag5Ch: parsed.ULbag5Ch || '0/0/0/0/0/0'
+      };
+      if (code1El) code1El.value = parsed.code1 || '';
+      if (code2El) code2El.value = parsed.code2 || '';
+      if (code3El) code3El.value = parsed.code3 || '';
+      mergeCodes();
+    }
+    function applyStatRemap(remap) {
+      const fields = { 힘:getEl('f42'), 민:getEl('f47'), 지:getEl('f52') };
+      const original = { 힘:String(fields.힘?.value || ''), 민:String(fields.민?.value || ''), 지:String(fields.지?.value || '') };
+      const next = { ...original };
+      Object.keys(remap).forEach(from => {
+        const to = remap[from];
+        if (!to || !fields[to]) return;
+        next[to] = original[from];
+      });
+      if (fields.힘) fields.힘.value = next.힘;
+      if (fields.민) fields.민.value = next.민;
+      if (fields.지) fields.지.value = next.지;
+    }
+    function getStatRemapFromDropdowns() {
+      return {
+        힘: getEl('statFromStr')?.value || '',
+        민: getEl('statFromAgi')?.value || '',
+        지: getEl('statFromInt')?.value || ''
+      };
+    }
+    function buildServerJson() {
+      const stats = `${getEl('f42')?.value || originalStats.Str || '@@@'}/${getEl('f47')?.value || originalStats.Agi || '@@@'}/${getEl('f52')?.value || originalStats.Int || '@@@'}`;
+      return {
+        ULbag1: ulbagData.ULbag1 || '0/0/0/0/0/0',
+        ULbag1Ch: ulbagData.ULbag1Ch || '0/0/0/0/0/0',
+        ULbag2: ulbagData.ULbag2 || '0/0/0/0/0/0',
+        ULbag2Ch: ulbagData.ULbag2Ch || '0/0/0/0/0/0',
+        ULbag3: ulbagData.ULbag3 || '0/0/0/0/0/0',
+        ULbag3Ch: ulbagData.ULbag3Ch || '0/0/0/0/0/0',
+        ULbag4: ulbagData.ULbag4 || '0/0/0/0/0/0',
+        ULbag4Ch: ulbagData.ULbag4Ch || '0/0/0/0/0/0',
+        ULbag5: ulbagData.ULbag5 || '0/0/0/0/0/0',
+        ULbag5Ch: ulbagData.ULbag5Ch || '0/0/0/0/0/0',
+        Stats: stats,
+        Code1: code1El?.value.trim() || '@@@',
+        Code2: code2El?.value.trim() || '@@@',
+        Code3: code3El?.value.trim() || '@@@'
+      };
     }
 
-    input.addEventListener('input', render);
-    code1.addEventListener('input', render);
-    code2.addEventListener('input', render);
-    code3.addEventListener('input', render);
-    stats.addEventListener('input', render);
-    mapStr.addEventListener('change', render);
-    mapAgi.addEventListener('change', render);
-    mapInt.addEventListener('change', render);
-
-    sampleBtn.addEventListener('click', () => {
-      input.value = sampleText;
-      render();
+    getEl('parsePreloadBtn')?.addEventListener('click', () => {
+      const parsed = parsePreloadText(rawPreloadEl?.value);
+      applyParsedPreload(parsed);
+      if (serverJsonBoxEl) serverJsonBoxEl.textContent = JSON.stringify(buildServerJson(), null, 2);
     });
-
-    clearBtn.addEventListener('click', () => {
-      input.value = '';
-      code1.value = '';
-      code2.value = '';
-      code3.value = '';
-      stats.value = '';
-      mapStr.value = 'Str';
-      mapAgi.value = 'Agi';
-      mapInt.value = 'Int';
-      render();
+    getEl('samplePreloadBtn')?.addEventListener('click', () => {
+      if (rawPreloadEl) rawPreloadEl.value = SAMPLE_PRELOAD;
     });
-
-    copyBtn.addEventListener('click', async () => {
+    getEl('decodeBtn')?.addEventListener('click', () => {
       try {
-        await navigator.clipboard.writeText(output.textContent);
-        copyBtn.textContent = '복사됨';
-        setTimeout(() => {
-          copyBtn.textContent = 'JSON 복사';
-        }, 1200);
-      } catch (e) {
-        alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
+        mergeCodes();
+        const decoded = decodeClassic(fullCodeEl?.value, DEFAULT_PRESET, '');
+        lastDecoded = decoded;
+        setQuickFieldsFromDecoded(decoded);
+        if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({
+          code1: code1El?.value || '',
+          code2: code2El?.value || '',
+          code3: code3El?.value || '',
+          checksumMatched: decoded.checksumMatched
+        }, null, 2);
+      } catch (err) {
+        if (resultCodeBoxEl) resultCodeBoxEl.textContent = `디코드 실패: ${err.message}`;
       }
     });
+    getEl('applyStatSwapBtn')?.addEventListener('click', () => {
+      const remap = getStatRemapFromDropdowns();
+      applyStatRemap(remap);
+      if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({ statRemap: remap }, null, 2);
+    });
+    getEl('encodeBtn')?.addEventListener('click', () => {
+      try {
+        if (!lastDecoded) throw new Error('먼저 디코드를 실행해줘.');
+        const namedData = applyQuickFieldsToNamedData({ ...(lastDecoded.named || {}) });
+        const encoded = encodeClassicFromNamed(namedData, DEFAULT_PRESET, '');
+        if (code1El) code1El.value = encoded.code1;
+        if (code2El) code2El.value = encoded.code2;
+        if (code3El) code3El.value = encoded.code3;
+        mergeCodes();
+        if (resultCodeBoxEl) resultCodeBoxEl.textContent = JSON.stringify({
+          code1: encoded.code1,
+          code2: encoded.code2,
+          code3: encoded.code3
+        }, null, 2);
+      } catch (err) {
+        if (resultCodeBoxEl) resultCodeBoxEl.textContent = `인코드 실패: ${err.message}`;
+      }
+    });
+    getEl('buildJsonBtn')?.addEventListener('click', () => {
+      if (serverJsonBoxEl) serverJsonBoxEl.textContent = JSON.stringify(buildServerJson(), null, 2);
+    });
+    getEl('clearAllBtn')?.addEventListener('click', () => {
+      [rawPreloadEl, code1El, code2El, code3El, fullCodeEl].forEach(el => { if (el) el.value = ''; });
+      ['f42','f47','f52','f57','f162'].forEach(id => { const el = getEl(id); if (el) el.value = ''; });
+      ['f28','f33','f38','f43','f48','f53'].forEach(id => { const el = getEl(id); if (el) el.value = '0'; });
+      if (getEl('statFromStr')) getEl('statFromStr').value = '';
+      if (getEl('statFromAgi')) getEl('statFromAgi').value = '';
+      if (getEl('statFromInt')) getEl('statFromInt').value = '';
+      lastDecoded = null;
+      originalStats = { Str:'', Agi:'', Int:'' };
+      ulbagData = {
+        ULbag1:'0/0/0/0/0/0', ULbag1Ch:'0/0/0/0/0/0',
+        ULbag2:'0/0/0/0/0/0', ULbag2Ch:'0/0/0/0/0/0',
+        ULbag3:'0/0/0/0/0/0', ULbag3Ch:'0/0/0/0/0/0',
+        ULbag4:'0/0/0/0/0/0', ULbag4Ch:'0/0/0/0/0/0',
+        ULbag5:'0/0/0/0/0/0', ULbag5Ch:'0/0/0/0/0/0'
+      };
+      if (resultCodeBoxEl) resultCodeBoxEl.textContent = '아직 생성하지 않음';
+      if (serverJsonBoxEl) serverJsonBoxEl.textContent = '아직 생성하지 않음';
+    });
 
-    render();
+    code1El?.addEventListener('input', mergeCodes);
+    code2El?.addEventListener('input', mergeCodes);
+    code3El?.addEventListener('input', mergeCodes);
+
+    loadItemOptions().then(()=>{ populateItemSelects(); });
   </script>
 </body>
 </html>
