@@ -196,7 +196,7 @@ function ensureOption(el, value, type){
 
 function parsePreloadText(txt){
   function findPreloadValue(key){
-    const re = new RegExp(`call\\s+Preload\\s*\\(\\s*\"${key}:\\s*([^\\"\\r\\n]+)\"\\s*\\)`, 'i');
+    const re = new RegExp(`call\s+Preload\s*\(\s*\"${key}:\s*([^\"\r\n]+)\"\s*\)`, 'i');
     const m = txt.match(re);
     return m ? m[1].trim() : '';
   }
@@ -210,7 +210,7 @@ function parsePreloadText(txt){
     int: findPreloadValue('Int')
   };
   for(let i=1;i<=5;i++){
-    const re = new RegExp(`call\\s+Preload\\s*\\(\\s*\"ULbag${i}:([^,\\\"\\r\\n]+),ULbag${i}Ch:([^\\\"\\r\\n]+)\"\\s*\\)`, 'i');
+    const re = new RegExp(`call\s+Preload\s*\(\s*\"ULbag${i}:([^,\\"\r\n]+),ULbag${i}Ch:([^\\"\r\n]+)\"\s*\)`, 'i');
     const m = txt.match(re);
     parsed[`ULbag${i}`] = m ? m[1].trim() : '0/0/0/0/0/0';
     parsed[`ULbag${i}Ch`] = m ? m[2].trim() : '0/0/0/0/0/0';
@@ -289,9 +289,25 @@ function getSwapMap(){
 
 function applySwap(){
   const map = getSwapMap();
-  const original = { 힘: String($('jsonStr').value || ''), 민: String($('jsonAgi').value || ''), 지: String($('jsonInt').value || '') };
-  const next = { ...original };
-  Object.entries(map).forEach(([from,to]) => { if(to && Object.prototype.hasOwnProperty.call(next,to)) next[to] = original[from]; });
+
+  // 항상 변경전 스탯을 기준 소스로 사용해야 드롭다운을 여러 번 바꿔도 값이 꼬이지 않음
+  const source = {
+    힘: String($('beforeStr').value || ''),
+    민: String($('beforeAgi').value || ''),
+    지: String($('beforeInt').value || '')
+  };
+
+  const next = {
+    힘: source.힘,
+    민: source.민,
+    지: source.지
+  };
+
+  Object.entries(map).forEach(([from, to]) => {
+    if (!to || !Object.prototype.hasOwnProperty.call(next, to)) return;
+    next[to] = source[from];
+  });
+
   $('jsonStr').value = next.힘;
   $('jsonAgi').value = next.민;
   $('jsonInt').value = next.지;
