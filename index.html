@@ -99,6 +99,7 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
   <div class="grid2">
     <div>
       <label>캐릭터 번호</label>
+      <input id="charSearch" placeholder="캐릭터 검색">
       <select id="charNo"></select>
     </div>
     <div>
@@ -222,7 +223,6 @@ const CHARACTER_NAME_MAP = {
   36:'[4차] 사소리',
   32:'[4차] 가아라',
   45:'[4차] 미나토',
-  48:'[4차] 우치하 오비토',
   51:'[4차] 테마리',
   52:'[4차] 육선',
   39:'[4차] 키사메',
@@ -368,15 +368,40 @@ function buildCharacterOptions(){
     }
   });
 
-  return merged.sort(function(a, b){ return Number(a.value) - Number(b.value); });
+  function isOuterVariant(label){
+    return String(label).includes('외변');
+  }
+
+  return merged.sort(function(a, b){
+    const aOuter = isOuterVariant(a.label) ? 1 : 0;
+    const bOuter = isOuterVariant(b.label) ? 1 : 0;
+    if(aOuter !== bOuter) return aOuter - bOuter;
+    return String(a.label).localeCompare(String(b.label), 'ko');
+  });
+}
+
+function renderCharacterSelect(){
+  const el = $('charNo');
+  if(!el) return;
+  const currentValue = String(el.value || '0');
+  const q = String(($('charSearch') && $('charSearch').value) || '').trim().toLowerCase();
+  let options = buildCharacterOptions();
+  if(q){
+    options = options.filter(function(o){
+      return String(o.label).toLowerCase().includes(q) || String(o.value).includes(q);
+    });
+  }
+  const selected = buildCharacterOptions().find(function(o){ return String(o.value) === currentValue; });
+  if(selected && !options.some(function(o){ return String(o.value) === currentValue; })) options.unshift(selected);
+  el.innerHTML = options.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
+  if(options.some(function(o){ return String(o.value) === currentValue; })) el.value = currentValue;
 }
 
 function populateSelects(){
   ['item1','item2','item3','item4','item5','item6'].forEach(function(id){
     renderItemSelect(id);
   });
-  const mergedCharOptions = buildCharacterOptions();
-  $('charNo').innerHTML = mergedCharOptions.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
+  renderCharacterSelect();
 }
 
 function ensureOption(el, value, type){
@@ -397,6 +422,21 @@ function bindItemSelectRefresh(){
       renderItemSelect(id);
     });
   });
+}
+
+function bindCharacterSearch(){
+  const searchEl = $('charSearch');
+  const selectEl = $('charNo');
+  if(searchEl){
+    searchEl.addEventListener('input', function(){
+      renderCharacterSelect();
+    });
+  }
+  if(selectEl){
+    selectEl.addEventListener('change', function(){
+      renderCharacterSelect();
+    });
+  }
 }
 
 function escapeRegExp(str){ return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -491,6 +531,7 @@ function reflectDecoded(decoded){
   });
   ensureOption($('charNo'), d[56] ?? 0, 'char');
   $('charNo').value = String(d[56] ?? 0);
+  renderCharacterSelect();
   $('heroSS').value = String(d[161] ?? 0);
 }
 
@@ -626,6 +667,7 @@ $('clearBtn').addEventListener('click', function(){
   ['beforeStr','beforeAgi','beforeInt','jsonStr','jsonAgi','jsonInt','codeStr','codeAgi','codeInt','heroSS'].forEach(function(id){ $(id).value = ''; });
   ['swapStr','swapAgi','swapInt'].forEach(function(id){ $(id).value = ''; });
   ['item1','item2','item3','item4','item5','item6','charNo'].forEach(function(id){ if($(id)) $(id).value = '0'; });
+  if($('charSearch')) $('charSearch').value = '';
   populateSelects();
   $('codeBox').textContent = '아직 생성하지 않음';
   $('jsonBox').textContent = '아직 생성하지 않음';
@@ -654,6 +696,7 @@ function runSelfTests(){
 }
 
 bindItemSelectRefresh();
+bindCharacterSearch();
 runSelfTests();
 loadMasterJson();
 </script>
