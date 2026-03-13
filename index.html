@@ -199,6 +199,12 @@ function buildItemSetMap(groups){
 
 const ITEM_SET_MAP = buildItemSetMap(ITEM_SETS);
 
+const CHARACTER_NAME_MAP = {
+  39: '키사메',
+  44: '육비',
+  32: '가아라'
+};
+
 const $ = function(id){ return document.getElementById(id); };
 let itemOptions = [{value:0,label:'(없음)'}];
 let charOptions = [{value:0,label:'(선택 안 함)'}];
@@ -293,11 +299,41 @@ function renderItemSelect(selectId){
   if(filtered.some(function(o){ return String(o.value) === currentValue; })) el.value = currentValue;
 }
 
+function getCharacterLabel(value){
+  const num = Number(value);
+  if(Object.prototype.hasOwnProperty.call(CHARACTER_NAME_MAP, num)){
+    return CHARACTER_NAME_MAP[num] + ' (' + num + ')';
+  }
+  return '캐릭터 ' + value;
+}
+
+function buildCharacterOptions(){
+  const merged = [];
+  const seen = new Set();
+
+  Object.keys(CHARACTER_NAME_MAP).forEach(function(key){
+    const value = Number(key);
+    merged.push({ value: value, label: getCharacterLabel(value) });
+    seen.add(String(value));
+  });
+
+  charOptions.forEach(function(o){
+    const key = String(o.value);
+    if(!seen.has(key)){
+      merged.push({ value: o.value, label: getCharacterLabel(o.value) });
+      seen.add(key);
+    }
+  });
+
+  return merged.sort(function(a, b){ return Number(a.value) - Number(b.value); });
+}
+
 function populateSelects(){
   ['item1','item2','item3','item4','item5','item6'].forEach(function(id){
     renderItemSelect(id);
   });
-  $('charNo').innerHTML = charOptions.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
+  const mergedCharOptions = buildCharacterOptions();
+  $('charNo').innerHTML = mergedCharOptions.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
 }
 
 function ensureOption(el, value, type){
