@@ -304,7 +304,8 @@ function getCharacterLabel(value){
   if(Object.prototype.hasOwnProperty.call(CHARACTER_NAME_MAP, num)){
     return CHARACTER_NAME_MAP[num] + ' (' + num + ')';
   }
-  return '캐릭터 ' + value;
+  const original = charOptions.find(function(o){ return String(o.value) === String(value); });
+  return original ? original.label : ('캐릭터 ' + value);
 }
 
 function buildCharacterOptions(){
