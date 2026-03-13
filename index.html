@@ -91,7 +91,6 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
       </select>
     </div>
   </div>
-  <div class="muted">JSON 스탯은 실제 서버 반영값이고, 코드용 스탯은 728999 cap이 적용된다.</div>
 </div>
 
 <div class="card">
@@ -107,12 +106,12 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
     </div>
   </div>
   <div class="grid">
-    <div><label>아이템 1</label><input id="itemSearch1" placeholder="아이템 검색"><select id="item1"></select></div>
-    <div><label>아이템 2</label><input id="itemSearch2" placeholder="아이템 검색"><select id="item2"></select></div>
-    <div><label>아이템 3</label><input id="itemSearch3" placeholder="아이템 검색"><select id="item3"></select></div>
-    <div><label>아이템 4</label><input id="itemSearch4" placeholder="아이템 검색"><select id="item4"></select></div>
-    <div><label>아이템 5</label><input id="itemSearch5" placeholder="아이템 검색"><select id="item5"></select></div>
-    <div><label>아이템 6</label><input id="itemSearch6" placeholder="아이템 검색"><select id="item6"></select></div>
+    <div><label>아이템 1</label><select id="item1"></select></div>
+    <div><label>아이템 2</label><select id="item2"></select></div>
+    <div><label>아이템 3</label><select id="item3"></select></div>
+    <div><label>아이템 4</label><select id="item4"></select></div>
+    <div><label>아이템 5</label><select id="item5"></select></div>
+    <div><label>아이템 6</label><select id="item6"></select></div>
   </div>
   <div class="btn-row" style="margin-top:8px">
     <button id="generateBtn">결과 생성</button>
@@ -162,10 +161,27 @@ call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
 
 call Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
 
-call Preload( "ID: dlwnsah1010" )
-call Preload( "Str: 666621" )
-call Preload( "Agi: 250911" )
-call Preload( "Int: 255271" )`;
+call Preload( "ID: jinhey" )
+call Preload( "Str: 300001" )
+call Preload( "Agi: 250001" )
+call Preload( "Int: 1000000" )`;
+
+const ITEM_SETS = [
+  [688, 689, 690]
+];
+
+function buildItemSetMap(groups){
+  const map = {};
+  (groups || []).forEach(function(group){
+    const ids = (group || []).map(function(v){ return Number(v); }).filter(function(v){ return Number.isFinite(v) && v > 0; });
+    ids.forEach(function(id){
+      map[id] = ids.filter(function(other){ return other !== id; });
+    });
+  });
+  return map;
+}
+
+const ITEM_SET_MAP = buildItemSetMap(ITEM_SETS);
 
 const $ = function(id){ return document.getElementById(id); };
 let itemOptions = [{value:0,label:'(없음)'}];
@@ -234,25 +250,36 @@ async function loadMasterJson(){
   populateSelects();
 }
 
-function renderItemSelect(selectId, searchText){
+function getItemByValue(value){
+  return itemOptions.find(function(o){ return String(o.value) === String(value); }) || null;
+}
+
+function getRelatedItemOptions(currentValue){
+  const ids = ITEM_SET_MAP[String(currentValue)] || ITEM_SET_MAP[Number(currentValue)] || [];
+  return ids.map(getItemByValue).filter(Boolean);
+}
+
+function renderItemSelect(selectId){
   const el = $(selectId);
   if(!el) return;
   const currentValue = String(el.value || '0');
-  const q = String(searchText || '').trim().toLowerCase();
   let filtered = itemOptions.slice();
-  if(q){
-    filtered = itemOptions.filter(function(o){ return String(o.label).toLowerCase().includes(q) || String(o.value).includes(q); });
+  const related = getRelatedItemOptions(currentValue);
+  if(related.length > 0){
     const selectedOption = itemOptions.find(function(o){ return String(o.value) === currentValue; });
-    if(selectedOption && !filtered.some(function(o){ return String(o.value) === currentValue; })) filtered.unshift(selectedOption);
+    filtered = [];
+    if(selectedOption) filtered.push(selectedOption);
+    related.forEach(function(o){
+      if(!filtered.some(function(x){ return String(x.value) === String(o.value); })) filtered.push(o);
+    });
   }
   el.innerHTML = filtered.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
   if(filtered.some(function(o){ return String(o.value) === currentValue; })) el.value = currentValue;
 }
 
 function populateSelects(){
-  ['item1','item2','item3','item4','item5','item6'].forEach(function(id, idx){
-    const searchEl = $('itemSearch' + (idx + 1));
-    renderItemSelect(id, searchEl ? searchEl.value : '');
+  ['item1','item2','item3','item4','item5','item6'].forEach(function(id){
+    renderItemSelect(id);
   });
   $('charNo').innerHTML = charOptions.map(function(o){ return '<option value="' + o.value + '">' + o.label + '</option>'; }).join('');
 }
@@ -267,15 +294,12 @@ function ensureOption(el, value, type){
   }
 }
 
-function bindItemSearches(){
-  [1,2,3,4,5,6].forEach(function(n){
-    const searchEl = $('itemSearch' + n);
-    const selectId = 'item' + n;
-    if(!searchEl) return;
-    searchEl.addEventListener('input', function(){
-      const currentValue = $(selectId).value;
-      renderItemSelect(selectId, searchEl.value);
-      if(Array.from($(selectId).options).some(function(opt){ return String(opt.value) === String(currentValue); })) $(selectId).value = currentValue;
+function bindItemSelectRefresh(){
+  ['item1','item2','item3','item4','item5','item6'].forEach(function(id){
+    const el = $(id);
+    if(!el) return;
+    el.addEventListener('change', function(){
+      renderItemSelect(id);
     });
   });
 }
@@ -506,7 +530,6 @@ $('clearBtn').addEventListener('click', function(){
   ['beforeStr','beforeAgi','beforeInt','jsonStr','jsonAgi','jsonInt','codeStr','codeAgi','codeInt','heroSS'].forEach(function(id){ $(id).value = ''; });
   ['swapStr','swapAgi','swapInt'].forEach(function(id){ $(id).value = ''; });
   ['item1','item2','item3','item4','item5','item6','charNo'].forEach(function(id){ if($(id)) $(id).value = '0'; });
-  ['itemSearch1','itemSearch2','itemSearch3','itemSearch4','itemSearch5','itemSearch6'].forEach(function(id){ if($(id)) $(id).value = ''; });
   populateSelects();
   $('codeBox').textContent = '아직 생성하지 않음';
   $('jsonBox').textContent = '아직 생성하지 않음';
@@ -534,7 +557,7 @@ function runSelfTests(){
   console.assert(nameToInteger('AB') === expectedAB, 'nameToInteger two chars failed');
 }
 
-bindItemSearches();
+bindItemSelectRefresh();
 runSelfTests();
 loadMasterJson();
 </script>
