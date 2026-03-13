@@ -42,7 +42,6 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
       <input id="statusText" readonly value="아직 불러오지 않음">
     </div>
   </div>
-  <div class="warn" style="margin-top:10px">불러오기 = Preload 파싱 + 닉네임 반영 + 코드 디코드. 결과 생성 = 현재 화면 값으로 코드 인코드 + 서버 JSON 생성.</div>
 </div>
 
 <div class="card">
@@ -91,7 +90,6 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
       </select>
     </div>
   </div>
-  <div class="muted">JSON 스탯은 실제 서버 반영값이고, 코드용 스탯은 728999 cap이 적용된다.</div>
 </div>
 
 <div class="card">
@@ -104,7 +102,12 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
     </div>
     <div>
       <label>HeroSS</label>
-      <input id="heroSS" type="number">
+      <select id="heroSS">
+        <option value="0">선택 안 함</option>
+        <option value="1">힘</option>
+        <option value="2">민</option>
+        <option value="3">지</option>
+      </select>
     </div>
   </div>
   <div class="grid">
@@ -232,8 +235,7 @@ const CHARACTER_NAME_MAP = {
   56:'[4차] 히나타(외변)',
   57:'[4차] 우치하 오비토(외변)',
   58:'[4차] 이타치(외변)',
-  59:'[4차] 가아라(외변)',
-  61:'[4차] 카부토(외변)',
+  59:'[4차] 가아라(외변)',  61:'[4차] 카부토(외변)',
   62:'[4차] 사쿠라(외변)',
   63:'[4차] 가이(외변)',
   64:'[4차] 츠나데(외변)',
