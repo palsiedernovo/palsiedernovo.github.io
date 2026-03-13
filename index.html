@@ -171,11 +171,18 @@ function getNameBytes(name){
 function nameToInteger(name){
   const bytes = getNameBytes(name);
   let num = 0;
-  for(let j = 0; j < bytes.length; j++){
-    num += j * bytes[j];
+  const ascii = String(PRESET.udg_keySet || '');
+  const num2 = bytes.length;
+  for(let j = 0; j < num2; j++){
+    const ch = String.fromCharCode(bytes[j]);
+    const num4 = ascii.indexOf(ch);
+    if(num4 !== -1){
+      num += j * num4;
+    }
   }
-  return num + bytes.length * 256;
+  return num + num2 * ascii.length;
 }
+
 function getChecksum(id,data){ let num = nameToInteger(PRESET.udg_MapName) + nameToInteger(id) + (PRESET.udg_saveDataVersion % 1000); const modBase = Math.pow(PRESET.udg_keySet.length,2); for(let i=0;i<data.length;i++){ if(data[i]!==0 && i!==25){ num += (data[i] % modBase) * (((i+1)%5)+1); } } return num; }
 
 async function loadMasterJson(){
@@ -490,9 +497,12 @@ $('copyJsonBtn').addEventListener('click', async function(){
 ['swapStr','swapAgi','swapInt'].forEach(function(id){ $(id).addEventListener('change', applySwap); });
 bindItemSearches();
 function runSelfTests(){
+  const ascii = String(PRESET.udg_keySet || '');
   console.assert(nameToInteger('') === 0, 'nameToInteger empty failed');
-  console.assert(nameToInteger('A') === 256, 'nameToInteger single char failed');
-  console.assert(nameToInteger('AB') === (2 * 256 + 66), 'nameToInteger two chars failed');
+  console.assert(nameToInteger('A') === ascii.length, 'nameToInteger single char failed');
+  const idxB = ascii.indexOf('B');
+  const expectedAB = 2 * ascii.length + (idxB !== -1 ? idxB : 0);
+  console.assert(nameToInteger('AB') === expectedAB, 'nameToInteger two chars failed');
 }
 
 runSelfTests();
