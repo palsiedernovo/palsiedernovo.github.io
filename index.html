@@ -91,6 +91,7 @@ pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;min-height:
       </select>
     </div>
   </div>
+  <div class="muted">JSON 스탯은 실제 서버 반영값이고, 코드용 스탯은 728999 cap이 적용된다.</div>
 </div>
 
 <div class="card">
@@ -161,10 +162,10 @@ call Preload( "ULbag4:0/0/0/0/0/0,ULbag4Ch:0/0/0/0/0/0" )
 
 call Preload( "ULbag5:730/729/0/0/0/0,ULbag5Ch:0/0/0/0/0/0" )
 
-call Preload( "ID: jinhey" )
-call Preload( "Str: 300001" )
-call Preload( "Agi: 250001" )
-call Preload( "Int: 1000000" )`;
+call Preload( "ID: dlwnsah1010" )
+call Preload( "Str: 666621" )
+call Preload( "Agi: 250911" )
+call Preload( "Int: 255271" )`;
 
 const ITEM_SETS = [
   [688, 689, 690],
@@ -183,7 +184,6 @@ const ITEM_SETS = [
   [735,736],
   [737,738,739],
   [691,692,693]
-  
 ];
 
 function buildItemSetMap(groups){
@@ -408,6 +408,7 @@ function reflectDecoded(decoded){
   ['item1','item2','item3','item4','item5','item6'].forEach(function(id, n){
     ensureOption($(id), d[itemIdx[n]] ?? 0, 'item');
     $(id).value = String(d[itemIdx[n]] ?? 0);
+    renderItemSelect(id);
   });
   ensureOption($('charNo'), d[56] ?? 0, 'char');
   $('charNo').value = String(d[56] ?? 0);
